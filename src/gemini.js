@@ -28,11 +28,9 @@ function buildPrompt(input) {
     ? input.competency.message
     : '';
 
-  // 付与型は会社が評価尺度を決めている。目標文を作るのではなく、
-  // その尺度を上げるために何をするかを提案させる。
-  const givenLevels = (input.competency && input.competency.kind === '付与型' && input.competency.levels)
-    ? input.competency.levels.filter(function (v) { return v; })
-    : [];
+  // 付与型は会社が評価尺度を決めている。尺度の数字は評価シート側が正なので渡さず、
+  // 「会社が定めた尺度を上げるために何をするか」を提案させる。
+  const isGiven = Boolean(input.competency && input.competency.kind === '付与型');
 
   return [
     'あなたは組織開発と人事評価の専門家で、コンピテンシー評価（行動特性評価）のスペシャリストです。',
@@ -46,11 +44,12 @@ function buildPrompt(input) {
     message ? '' : null,
     message ? 'この項目が選ばれた理由（評価者から社員へのメッセージ。改善案はこの意図に沿わせること）：' : null,
     message ? message : null,
-    givenLevels.length > 0 ? '' : null,
-    givenLevels.length > 0 ? 'この項目は付与型で、会社が次の評価尺度を定めている。本人が目標文を作る必要はない。' : null,
-    givenLevels.length > 0 ? '改善案は「この尺度の段階を1つ上げるために、本人が何をするか」を書くこと。' : null,
-    givenLevels.length > 0 ? '評点基準（levels）は会社の尺度をそのまま使うので、新たに作らず空の配列で返すこと。' : null,
-    givenLevels.length > 0 ? givenLevels.map(function (t, n) { return '  ' + (n + 1) + '：' + t; }).join('\n') : null,
+    isGiven ? '' : null,
+    isGiven ? 'この項目は付与型で、会社が評価尺度（1〜4）をすでに定めている。本人が目標文を作る必要はない。' : null,
+    isGiven ? '尺度の具体的な数字はここには示さない。上の選定理由に書かれている狙いを読み取り、' : null,
+    isGiven ? '改善案は「その評価を1段階上げるために、本人が何をするか」を書くこと。' : null,
+    isGiven ? '評点基準（levels）は会社が定めたものを使うので、新たに作らず空の配列で返し、' : null,
+    isGiven ? 'indicator には「評価尺度は評価シートで確認してください」と書くこと。' : null,
     '',
     '# この会社の評価の進み方（改善案はこの周期に合わせること）',
     '- 上長による評価は3か月ごと（四半期ごと）に行われる。目標は3か月で達成しきれる粒度にする。',

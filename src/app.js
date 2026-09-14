@@ -119,12 +119,11 @@
     const note = el('excluded-note');
     if (item.kind === '付与型') {
       note.textContent = 'この項目は付与型です。評価尺度は上長が決めるため、目標の記入は不要です。'
+        + '評価尺度は評価シートでご確認ください。'
         + 'ここから先は、その尺度を上げるために何をするかを考えたい場合にお使いください。';
       note.hidden = false;
-      renderGivenLevels(item.levels);
     } else {
       note.hidden = true;
-      renderGivenLevels(null);
     }
   }
 
@@ -206,28 +205,6 @@
 
       list.appendChild(li);
     });
-  }
-
-  /** 会社から与えられている評価尺度（付与型）を表示する */
-  function renderGivenLevels(levels) {
-    const box = el('given-levels');
-    const list = el('given-levels-list');
-    list.innerHTML = '';
-    if (!levels || levels.length === 0) {
-      box.hidden = true;
-      return;
-    }
-    levels.forEach(function (text, i) {
-      if (!text) return;
-      const li = document.createElement('li');
-      const num = document.createElement('span');
-      num.className = 'levels-num';
-      num.textContent = String(i + 1);
-      li.appendChild(num);
-      li.appendChild(document.createTextNode(text));
-      list.appendChild(li);
-    });
-    box.hidden = false;
   }
 
   /**
