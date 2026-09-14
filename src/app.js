@@ -396,7 +396,10 @@
       num.className = 'levels-num';
       num.textContent = String(i + 1);
       li.appendChild(num);
-      li.appendChild(document.createTextNode(String(text).replace(/^\s*[1-4]\s*[：:．.]?\s*/, '')));
+      // 「1：」のような番号表記だけを外す。区切り記号が無ければ外さない
+      // （「3件のアプリを…」の3まで消してしまうため）
+      const body = String(text).replace(/^\s*[1-4]\s*[：:．.、]\s*/, '');
+      li.appendChild(document.createTextNode(body));
       list.appendChild(li);
     });
     box.hidden = false;
