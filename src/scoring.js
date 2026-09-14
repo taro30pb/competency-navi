@@ -105,7 +105,7 @@ function clamp(score) {
 /**
  * 6観点で採点する。
  * draft … 自己設定の行動目標（初稿）
- * mbo   … 対応するMBO { name, current, target }
+ * mbo   … 関連するKPI { name, current, target } と、選んだコンピテンシー項目
  */
 function scoreDraft(draft, mbo) {
   mbo = mbo || {};
@@ -204,9 +204,18 @@ function scoreDraft(draft, mbo) {
 
 /** 合計点から判定を返す */
 function judge(total) {
-  if (total >= 3.5) return { level: 'pass', label: '合格水準', note: 'このまま上長に提出できる水準です。' };
-  if (total >= 2.5) return { level: 'near', label: 'あと一歩', note: '骨格はできています。弱い観点を1〜2つ直せば届きます。' };
-  return { level: 'weak', label: '書き直しが必要', note: 'このままでは上長が達成・未達を判定できません。' };
+  // 点数は人事評価ではなく、書き方の目安。否定的な言い方は使わない。
+  const note = '　※この点数は評価ではなく、書き方の目安です。';
+  if (total >= 3.5) {
+    return { level: 'pass', label: '十分に書けています',
+      note: '期末に自分の成果を説明しやすい形になっています。' + note };
+  }
+  if (total >= 2.5) {
+    return { level: 'near', label: 'あと少し',
+      note: '骨格はできています。弱い観点を1つ2つ足すと、さらに伝わる形になります。' + note };
+  }
+  return { level: 'weak', label: 'もう一段具体的にできます',
+    note: '下の指摘を1つずつ足していくと、期末に「やった」と言いやすい目標になります。' + note };
 }
 
 if (typeof module !== 'undefined') {
