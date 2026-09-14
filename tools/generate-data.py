@@ -112,7 +112,15 @@ def build_assignments(z):
         key = (group, division, role)
         if not groups or groups[-1]['key'] != key:
             groups.append({'key': key, 'group': group, 'division': division, 'role': role, 'items': []})
-        item = {'code': code, 'name': name, 'definition': cells.get(5, '')}
+        # 付与型は会社が評価尺度を決める項目で、本人が目標を書かない（目標設定入力不要）。
+        # 列7に「自己設定型」と書かれていれば自己設定型、評価尺度の文章が入っていれば付与型。
+        seventh = cells.get(7, '')
+        if seventh == '自己設定型' or seventh == '':
+            kind = '自己設定型'
+        else:
+            kind = '付与型'
+
+        item = {'code': code, 'name': name, 'definition': cells.get(5, ''), 'kind': kind}
         # 選定理由は「なぜこの項目を選んだか」という評価者からのメッセージ。
         # どう書けば評価されるかの手がかりになるので取り込む（社内限定のファイル側）。
         message = cells.get(6, '')

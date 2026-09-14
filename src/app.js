@@ -62,13 +62,28 @@
       byRole[Number(roleIndex)].items.forEach(function (it) { mine.push(it); });
     }
 
-    if (mine.length > 0) {
-      const own = document.createElement('optgroup');
-      own.label = roleIndex === '' ? '全社共通' : 'あなたの項目';
-      mine.forEach(function (it) {
-        own.appendChild(option(it.code, it.code + '　' + it.name + (it.note ? '（' + it.note + '）' : '')));
+    // 付与型は会社が評価尺度を決める項目で、本人は目標を書かない（目標設定入力不要）。
+    // このアプリの出番がないので選択肢に出さない。
+    const given = mine.filter(function (it) { return it.kind === '付与型'; });
+    const own = mine.filter(function (it) { return it.kind !== '付与型'; });
+
+    if (own.length > 0) {
+      const group = document.createElement('optgroup');
+      group.label = roleIndex === '' ? '全社共通' : 'あなたの項目';
+      own.forEach(function (it) {
+        group.appendChild(option(it.code, it.code + '　' + it.name + (it.note ? '（' + it.note + '）' : '')));
       });
-      sel.appendChild(own);
+      sel.appendChild(group);
+    }
+
+    const note = el('excluded-note');
+    if (given.length > 0) {
+      note.textContent = '付与型の項目（'
+        + given.map(function (it) { return it.name; }).join('・')
+        + '）は、評価尺度を上長が決めるため出していません。目標を書く必要はありません。';
+      note.hidden = false;
+    } else {
+      note.hidden = true;
     }
 
     // 職位を選んだ人には、自分に関係する項目だけを出す。
