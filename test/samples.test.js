@@ -34,6 +34,19 @@ const weakDrafts = [
   { dept: '店長', text: 'スタッフが働きやすい店づくりを意識して、目標を達成できるようにします。' },
 ];
 
+/**
+ * あしたのチーム系の記事で「良い目標」「悪い目標」として公開されている型。
+ * 原文そのままではなく、記事から読み取った型に沿って書き起こしたもの。
+ * 当社の採点がこの水準とずれていないかを測る物差しとして使う。
+ */
+const benchmark = [
+  { kind: 'OK', role: '営業', text: '四半期末までに主要商談で顧客課題と意思決定者を事前整理し、提案前に上司レビューを受ける。' },
+  { kind: 'OK', role: '営業', text: '毎週の商談前に顧客課題と提案仮説を整理し、上司レビューを受ける。' },
+  { kind: 'OK', role: '管理職', text: '半期でメンバーの成長課題を整理し、月次1on1で支援内容と次の行動を更新する。' },
+  { kind: 'NG', role: '営業', text: '顧客課題を把握し、提案力を高める。' },
+  { kind: 'NG', role: '管理職', text: '部下が成長できる環境を可能な限り作る。' },
+];
+
 function line(mark, r, dept) {
   return mark + ' ' + r.total.toFixed(1) + '/5  ' + dept
     + '   ' + r.axes.map(function (a) { return a.smart + (a.score === null ? '-' : a.score); }).join(' ');
@@ -76,4 +89,22 @@ console.log(tooKind === 0
   ? '弱い目標はきちんと低く出ています。'
   : tooKind + ' 件が甘く出ています。語彙を広げすぎていないか見直すこと。');
 
-process.exit(failed === 0 && tooKind === 0 ? 0 : 1);
+console.log('');
+console.log('■ 社外の模範解答との照らし合わせ（OKは2.5点超、NGは1.5点以下）');
+console.log('');
+
+let offBase = 0;
+benchmark.forEach(function (c) {
+  const r = scoreDraft(c.text);
+  const ok = c.kind === 'OK' ? r.total > 2.5 : r.total <= 1.5;
+  console.log((ok ? '  OK ' : '  ずれ') + ' ' + r.total.toFixed(1) + '/5  ' + c.kind + '例・' + c.role
+    + '   ' + r.axes.map(function (a) { return a.smart + (a.score === null ? '-' : a.score); }).join(' '));
+  if (!ok) offBase++;
+});
+
+console.log('');
+console.log(offBase === 0
+  ? '社外の模範解答とも矛盾していません。'
+  : offBase + ' 件がずれています。当社の基準が厳しすぎないか確認すること。');
+
+process.exit(failed === 0 && tooKind === 0 && offBase === 0 ? 0 : 1);
