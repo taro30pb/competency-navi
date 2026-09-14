@@ -21,6 +21,7 @@
 const VAGUE_WORDS = [
   '頑張', 'がんば', 'しっかり', 'きちんと', 'ちゃんと', '努め', '心がけ', '心掛け',
   '意識し', 'なるべく', 'できるだけ', '出来るだけ', '積極的に', '前向きに',
+  '極力', '努力', '注力', '推進し', '強化し',
   '忘れないように', '丁寧に', 'スムーズに', '適切に', '随時', '可能な限り',
   '喜んでもら', '満足してもら', '信頼される', '迷惑をかけない', '気をつけ', '気を付け',
 ];
@@ -37,6 +38,16 @@ const ACTION_VERBS = [
 
 /** 自分ではなく他人が動くことになっている言葉。達成可能性（A）を下げる */
 const DEPENDENT_WORDS = ['してもらう', 'してもらえ', 'いただく', 'させる', '会社が', '上司が', '上長が', '他部署が', '誰かが'];
+
+/**
+ * 上司が目で確認できる事実を表す言葉。
+ * あしたのチームの判定ロジックでいう「可視化（測定可能性）」にあたる。
+ * 提出物・レビュー・記録が残る行動は、期末に「やった」と示せる。
+ */
+const EVIDENCE_WORDS = [
+  '提出', 'レビュー', '記録', 'シート', '一覧', '日報', '週報', '月報', '議事録',
+  'ログ', '資料', '報告書', 'チェックリスト', 'データ', '台帳', 'フォーム', '実績表',
+];
 
 /** 仕組み・型として残る言葉 */
 const SYSTEM_WORDS = ['一覧', 'チェックリスト', 'テンプレート', 'フォーム', 'ルール', '手順', '仕組み', '台帳', 'シート'];
@@ -111,6 +122,7 @@ function scoreDraft(draft, mbo) {
   const vague = findWords(text, VAGUE_WORDS);
   const actions = findActions(text);
   const systems = findWords(text, SYSTEM_WORDS);
+  const evidence = findWords(text, EVIDENCE_WORDS);
   const deadlines = findWords(text, DEADLINE_WORDS);
   const frequencies = findWords(text, FREQUENCY_WORDS);
   const reports = findWords(text, REPORT_WORDS);
@@ -138,11 +150,11 @@ function scoreDraft(draft, mbo) {
   ]);
 
   // ② 定量性（M 測れる）
-  axis('quantity', '定量性', 'M', '件数・人数・％など、数えられる形で書かれているか', [
+  axis('quantity', '定量性', 'M', '数えられる形で書かれ、上司が確認できる事実になっているか', [
     quantities.length >= 1,
     quantities.length >= 2,
-    quantities.length >= 3,
     /\d+[^。、]{0,8}(以上|以内|未満|超)/.test(toHalfWidth(text)) || /達成率/.test(text),   // 数字で達成ラインが引かれている
+    evidence.length >= 1,   // 提出物・レビュー・記録など、上司が確認できる形になっている
   ]);
 
   // ③ 手段（A 達成できる）
@@ -192,7 +204,8 @@ function scoreDraft(draft, mbo) {
     detected: {
       vague: vague, actions: actions, systems: systems, deadlines: deadlines,
       frequencies: frequencies, reports: reports, reviews: reviews,
-      outcomes: outcomes, quantities: quantities, dependents: dependents, reportTargets: reportTargets,
+      outcomes: outcomes, quantities: quantities, dependents: dependents,
+      reportTargets: reportTargets, evidence: evidence,
     },
   };
 }

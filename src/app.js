@@ -11,7 +11,12 @@
   };
 
   function readMbo() {
-    return { competency: selectedCompetency() };
+    const roleIndex = el('role').value;
+    return {
+      competency: selectedCompetency(),
+      // 役職者かどうかで求められる水準が変わるため、選んだ所属・職位も渡す
+      role: roleIndex === '' ? '' : roleLabel(byRole[Number(roleIndex)]),
+    };
   }
 
   // ---- コンピテンシー項目の選択 ----------------------------------------
