@@ -32,15 +32,15 @@ cases.forEach(function (c) {
   const after = scoreDraft(c.improved, c.mbo);
   const gain = after.total - before.total;
   console.log('\n■ ' + c.name);
-  console.log('  初稿   ' + String(before.total).padStart(2) + '/30  ' + judge(before.total).label
+  console.log('  初稿   ' + before.total.toFixed(1) + '/4  ' + judge(before.total).label
     + '   ' + before.axes.map(function (a) { return a.label + ':' + a.score; }).join(' '));
-  console.log('  改善版 ' + String(after.total).padStart(2) + '/30  ' + judge(after.total).label
+  console.log('  改善版 ' + after.total.toFixed(1) + '/4  ' + judge(after.total).label
     + '   ' + after.axes.map(function (a) { return a.label + ':' + a.score; }).join(' '));
-  console.log('  改善幅 +' + gain);
+  console.log('  改善幅 +' + gain.toFixed(1));
 
-  if (before.total > 12) { console.log('  NG: 初稿が高すぎる（弱い目標を見抜けていない）'); failed++; }
-  if (after.total < 25) { console.log('  NG: 改善版が合格水準に届いていない'); failed++; }
-  if (gain < 12) { console.log('  NG: 改善幅が小さすぎる'); failed++; }
+  if (before.total > 2.4) { console.log('  NG: 初稿が高すぎる（弱い目標を見抜けていない）'); failed++; }
+  if (after.total < 3.5) { console.log('  NG: 改善版が合格水準に届いていない'); failed++; }
+  if (gain < 1.5) { console.log('  NG: 改善幅が小さすぎる'); failed++; }
 });
 
 console.log('\n' + (failed === 0 ? 'すべて期待どおり' : failed + ' 件が期待とずれています'));

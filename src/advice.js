@@ -78,7 +78,7 @@ const ROOT_CAUSES = [
     key: 'backcast',
     test: function (r, mbo) {
       return Boolean(mbo && mbo.current && mbo.target)
-        && r.axes.filter(function (a) { return a.key === 'linkage'; })[0].score <= 3;
+        && r.axes.filter(function (a) { return a.key === 'linkage'; })[0].score <= 2;
     },
     message: function (r, mbo) {
       return mbo.current + '→' + mbo.target + 'への逆算（毎月あるいは毎週どれだけ積み上げるのか）が抜けています。'
@@ -121,7 +121,7 @@ function buildAdvice(result, mbo) {
   });
 
   const weakAxes = result.axes
-    .filter(function (a) { return a.score <= 3; })
+    .filter(function (a) { return a.score <= 2; })
     .sort(function (a, b) { return a.score - b.score; });
 
   weakAxes.forEach(function (axis) {
@@ -142,7 +142,7 @@ function buildAdvice(result, mbo) {
       letter: axis.smart,
       label: meaning.label || axis.label,
       note: meaning.note || axis.hint,
-      met: axis.score >= 4,
+      met: axis.score >= 3,
     };
   });
 

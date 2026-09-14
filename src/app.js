@@ -36,8 +36,8 @@
       const meter = document.createElement('span');
       meter.className = 'axis-meter';
       meter.setAttribute('role', 'img');
-      meter.setAttribute('aria-label', axis.score + '点／5点');
-      for (let i = 1; i <= 5; i++) {
+      meter.setAttribute('aria-label', axis.score + '点／4点');
+      for (let i = 1; i <= 4; i++) {
         const dot = document.createElement('span');
         dot.className = 'dot' + (i <= axis.score ? ' dot-on' : '');
         meter.appendChild(dot);
@@ -136,7 +136,7 @@
     const verdict = judge(result.total);
     const advice = buildAdvice(result, mbo);
 
-    el('score-total').textContent = result.total;
+    el('score-total').textContent = result.total.toFixed(1);
     el('verdict-label').textContent = verdict.label;
     el('verdict-label').className = 'badge badge-' + verdict.level;
     el('verdict-note').textContent = verdict.note;

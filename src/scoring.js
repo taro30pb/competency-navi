@@ -2,6 +2,7 @@
  * コンピテンシー目標ナビ — 採点エンジン
  *
  * 行動目標の文章を6観点で採点し、指摘コメントの材料を返す。
+ * 各観点1〜4点、最終点はその平均（4点満点）。社のコンピテンシー評価の満点に合わせている。
  * AIは使わない。すべて手元で完結する検査。
  *
  * 6観点はSMARTの法則に対応させている。
@@ -109,8 +110,8 @@ function clamp(score) {
 function scoreDraft(draft, mbo) {
   mbo = mbo || {};
   const text = (draft || '').trim();
-  const vague = findWords(text, VAGUE_WORDS);
   const mboName = (mbo.name || '').trim();
+  const vague = findWords(text, VAGUE_WORDS);
   // 「実施後レビュー期限遵守率」のように指標名そのものに含まれる語は、
   // 本人の行動ではなく指標の名前なので、手段として数えない。
   const actions = findWords(text, ACTION_VERBS).filter(function (w) { return mboName.indexOf(w) === -1; });
@@ -121,76 +122,76 @@ function scoreDraft(draft, mbo) {
   const reviews = findWords(text, REVIEW_WORDS);
   const outcomes = findWords(text, OUTCOME_WORDS);
   const dependents = findWords(text, DEPENDENT_WORDS);
-  const ratio = growthRatio(mbo.current, mbo.target);
   const quantities = findQuantities(text);
-  const numbers = findNumbers(text);
+  const ratio = growthRatio(mbo.current, mbo.target);
 
-  const axes = [];
-
-  // ① 具体性 — 誰の何を、どの場面で
-  let specificity = 1;
-  if (/担当|自分|私|チーム|部署|店舗|現場|顧客|お客様|施主|案件|物件|会員|生徒|利用者/.test(text)) specificity += 1;
-  if (/(時|際|場合|後|前|当日|受けた|きたら|あったら)/.test(text)) specificity += 1;
-  if (quantities.length > 0) specificity += 1;
-  if (vague.length === 0) specificity += 1;
-  if (vague.length >= 2) specificity -= 1;
-  axes.push({ key: 'specificity', label: '具体性', smart: 'S', score: clamp(specificity), hint: '誰の・何を・どの場面で、が読んで分かるか' });
-
-  // ② 定量性 — 数えられる形になっているか
-  let quantity = 1;
-  if (quantities.length >= 1) quantity += 2;
-  if (quantities.length >= 2) quantity += 1;
-  if (quantities.length >= 3) quantity += 1;
-  if (quantities.length === 0 && numbers.length > 0) quantity += 1;
-  axes.push({ key: 'quantity', label: '定量性', smart: 'M', score: clamp(quantity), hint: '件数・人数・％など、数えられる形で書かれているか' });
-
-  // ③ KPI連動 — 対応するMBOにつながっているか
-  let linkage = 1;
-  const overlap = longestCommonSubstring(mboName, text);
-  if (overlap >= 4) linkage += 2;
-  else if (overlap >= 2) linkage += 1;
-  const current = String(mbo.current || '').replace(/[^\d.]/g, '');
-  const target = String(mbo.target || '').replace(/[^\d.]/g, '');
   const half = toHalfWidth(text);
-  const hasCurrent = current !== '' && half.indexOf(current) !== -1;
+  const target = String(mbo.target || '').replace(/[^\d.]/g, '');
   const hasTarget = target !== '' && half.indexOf(target) !== -1;
-  if (hasCurrent && hasTarget) linkage += 2;
-  else if (hasTarget) linkage += 1;
-  axes.push({ key: 'linkage', label: 'KPI連動', smart: 'R', score: clamp(linkage), hint: '対応する指標と、現状値→目標値の逆算が入っているか' });
+  const overlap = longestCommonSubstring(mboName, text);
 
-  // ④ 手段 — 何をするのかが動作で書かれているか
-  let method = 1;
-  if (actions.length >= 1) method += 2;
-  if (actions.length >= 2) method += 1;
-  if (actions.length >= 3) method += 1;
-  if (systems.length >= 1) method += 1;
-  if (outcomes.length > 0 && actions.length === 0) method -= 1;
-  // 他人が動く前提の書き方は、自分では達成できないので下げる
-  if (dependents.length > 0 && actions.length <= 1) method -= 1;
-  // 裏づけのない大きな跳ね上がり（現状の3倍以上）は、量の根拠が要る
-  if (ratio !== null && ratio >= 3 && quantities.length === 0) method -= 1;
-  axes.push({ key: 'method', label: '手段', smart: 'A', score: clamp(method), hint: '結果ではなく、自分が動かせる行動で書かれているか' });
+  // 観点ごとに3つの条件を見て、満たした数＋1を点数とする（1〜4点）。
+  // 社のコンピテンシー評価が4点満点なので、それに合わせている。
+  const axes = [];
+  function axis(key, label, smart, hint, conditions) {
+    let met = 0;
+    conditions.forEach(function (c) { if (c) met += 1; });
+    axes.push({ key: key, label: label, smart: smart, score: 1 + met, hint: hint });
+  }
 
-  // ⑤ 期限・頻度 — いつやるのか
-  let timing = 1;
-  if (frequencies.length >= 1) timing += 2;
-  if (deadlines.length >= 1) timing += 2;
-  if (frequencies.length + deadlines.length >= 3) timing += 1;
-  axes.push({ key: 'timing', label: '期限・頻度', smart: 'T', score: clamp(timing), hint: 'いつまでに・どのくらいの頻度で、が決まっているか' });
+  // ① 具体性（S 具体的）
+  axis('specificity', '具体性', 'S', '誰の・何を・どの場面で、が読んで分かるか', [
+    /担当|自分|私|チーム|部署|店舗|現場|顧客|お客様|施主|案件|物件|会員|生徒|利用者/.test(text),
+    /(時|際|場合|後|前|当日|受けた|きたら|あったら)/.test(text),
+    vague.length === 0,
+  ]);
 
-  // ⑥ 報告・振返り — 続く仕組みがあるか
-  let followup = 1;
-  if (reports.length >= 1) followup += 2;
-  if (reviews.length >= 1) followup += 2;
-  if (reports.length >= 1 && reviews.length >= 1 && (frequencies.length >= 1 || deadlines.length >= 1)) followup += 1;
-  axes.push({ key: 'followup', label: '報告・振返り', smart: '＋', score: clamp(followup), hint: '誰に報告し、ずれたときにどう立て直すかがあるか' });
+  // ② 定量性（M 測れる）
+  axis('quantity', '定量性', 'M', '件数・人数・％など、数えられる形で書かれているか', [
+    quantities.length >= 1,
+    quantities.length >= 2,
+    quantities.length >= 3,
+  ]);
 
-  let total = 0;
-  axes.forEach(function (a) { total += a.score; });
+  // ③ 手段（A 達成できる）
+  axis('method', '手段', 'A', '結果ではなく、自分が動かせる行動で書かれているか', [
+    actions.length >= 1,
+    actions.length >= 2 || systems.length >= 1,
+    // 他人任せでなく、成果の言いっぱなしでもなく、無茶な跳ね上がりでもない
+    dependents.length === 0
+      && !(outcomes.length > 0 && actions.length === 0)
+      && !(ratio !== null && ratio >= 3 && quantities.length === 0),
+  ]);
+
+  // ④ KPI連動（R 指標とつながる）
+  axis('linkage', 'KPI連動', 'R', '対応する指標と、現状値→目標値の逆算が入っているか', [
+    overlap >= 2,
+    overlap >= 4,
+    hasTarget,
+  ]);
+
+  // ⑤ 期限・頻度（T 期限がある）
+  axis('timing', '期限・頻度', 'T', 'いつまでに・どのくらいの頻度で、が決まっているか', [
+    frequencies.length + deadlines.length >= 1,
+    frequencies.length >= 1 && deadlines.length >= 1,
+    frequencies.length + deadlines.length >= 3,
+  ]);
+
+  // ⑥ 報告・振返り（＋ 見直す）
+  axis('followup', '報告・振返り', '＋', '誰に報告し、ずれたときにどう立て直すかがあるか', [
+    reports.length >= 1,
+    reviews.length >= 1,
+    reports.length >= 1 && (frequencies.length >= 1 || deadlines.length >= 1),
+  ]);
+
+  // 最終点は6観点の平均。小数第1位まで出す（例 3.2／4）
+  let sum = 0;
+  axes.forEach(function (a) { sum += a.score; });
+  const total = Math.round((sum / axes.length) * 10) / 10;
 
   return {
     total: total,
-    max: axes.length * 5,
+    max: 4,
     axes: axes,
     detected: {
       vague: vague, actions: actions, systems: systems, deadlines: deadlines,
@@ -202,8 +203,8 @@ function scoreDraft(draft, mbo) {
 
 /** 合計点から判定を返す */
 function judge(total) {
-  if (total >= 25) return { level: 'pass', label: '合格水準', note: 'このまま上長に提出できる水準です。' };
-  if (total >= 18) return { level: 'near', label: 'あと一歩', note: '骨格はできています。弱い観点を1〜2つ直せば届きます。' };
+  if (total >= 3.5) return { level: 'pass', label: '合格水準', note: 'このまま上長に提出できる水準です。' };
+  if (total >= 2.5) return { level: 'near', label: 'あと一歩', note: '骨格はできています。弱い観点を1〜2つ直せば届きます。' };
   return { level: 'weak', label: '書き直しが必要', note: 'このままでは上長が達成・未達を判定できません。' };
 }
 
