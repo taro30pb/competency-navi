@@ -239,14 +239,14 @@ function judge(total) {
   const note = '　※この点数は評価ではなく、書き方の目安です。';
   if (total >= 4.0) {
     return { level: 'pass', label: '十分に書けています',
-      note: '期末に自分の成果を説明しやすい形になっています。' + note };
+      note: '四半期末に自分の成果を説明しやすい形になっています。' + note };
   }
   if (total >= 3.5) {
     return { level: 'near', label: '提出できる水準',
       note: '最低限そろえるべきものは入っています。弱い観点を1つ2つ足すと、さらに伝わる形になります。' + note };
   }
   return { level: 'weak', label: 'もう一段具体的にできます',
-    note: '下の指摘を1つずつ足していくと、期末に「やった」と言いやすい目標になります。' + note };
+    note: '下の指摘を1つずつ足していくと、四半期末に「やった」と言いやすい目標になります。' + note };
 }
 
 if (typeof module !== 'undefined') {
