@@ -6,14 +6,16 @@
 <title>コンピテンシー目標ナビ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600&family=Noto+Serif+JP:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
 
 <header class="header">
-  <h1>コンピテンシー目標ナビ</h1>
-  <p class="lead">自分で書いた行動目標を貼ると、上長が判定できる水準になっているかを6つの観点で診断します。</p>
+  <div class="header-inner">
+    <h1>コンピテンシー目標ナビ</h1>
+    <p class="lead">自分で書いた行動目標を貼ると、上長が判定できる水準になっているかを6つの観点で診断します。</p>
+  </div>
 </header>
 
 <main class="layout">
@@ -24,43 +26,50 @@
     <fieldset class="field-group">
       <legend>取り組むコンピテンシー（行動目標の項目）</legend>
 
-      <label class="field" id="role-field" hidden>
-        <span class="field-label">所属・職位</span>
-        <select id="role"></select>
-      </label>
+      <div class="form-table">
+        <label class="field" id="role-field" hidden>
+          <span class="field-label">所属・職位</span>
+          <span class="field-value"><select id="role"></select></span>
+        </label>
 
-      <label class="field">
-        <span class="field-label">項目</span>
-        <select id="competency"></select>
-      </label>
+        <label class="field">
+          <span class="field-label">項目</span>
+          <span class="field-value"><select id="competency"></select></span>
+        </label>
 
-      <p class="definition" id="definition" hidden></p>
+        <p class="definition" id="definition" hidden></p>
+      </div>
     </fieldset>
 
     <fieldset class="field-group">
-      <legend>対応するMBO（達成度を測る指標）　※分かる範囲で</legend>
+      <legend>関連するKPI（数値目標）　※分かる範囲で</legend>
 
-      <label class="field">
-        <span class="field-label">指標名</span>
-        <input type="text" id="mbo-name" placeholder="例）実施後レビュー期限遵守率">
-      </label>
+      <div class="form-table">
+        <label class="field">
+          <span class="field-label">指標名</span>
+          <span class="field-value"><input type="text" id="mbo-name" placeholder="例）実施後レビュー期限遵守率"></span>
+        </label>
 
-      <div class="field-row">
         <label class="field">
           <span class="field-label">現状値</span>
-          <input type="text" id="mbo-current" placeholder="例）80%">
+          <span class="field-value field-value-short"><input type="text" id="mbo-current" placeholder="例）80%"></span>
         </label>
+
         <label class="field">
           <span class="field-label">目標値</span>
-          <input type="text" id="mbo-target" placeholder="例）100%">
+          <span class="field-value field-value-short"><input type="text" id="mbo-target" placeholder="例）100%"></span>
         </label>
       </div>
     </fieldset>
 
-    <label class="field field-draft">
-      <span class="field-label">自分で書いた行動目標</span>
-      <textarea id="draft" rows="6" placeholder="例）実施後レビューを忘れないように、期限をしっかり守ってやるようにします。"></textarea>
-    </label>
+    <div class="field-group">
+      <div class="form-table">
+        <label class="field field-draft">
+          <span class="field-label">自分で書いた行動目標</span>
+          <span class="field-value"><textarea id="draft" rows="6" placeholder="例）実施後レビューを忘れないように、期限をしっかり守ってやるようにします。"></textarea></span>
+        </label>
+      </div>
+    </div>
 
     <div class="actions">
       <button type="button" id="run" class="button button-primary">診断する</button>
@@ -95,7 +104,7 @@
       <div class="block block-skeleton">
         <h3>書き直しの型</h3>
         <p class="skeleton" id="skeleton"></p>
-        <p class="note">〈　〉の中を自分の仕事の言葉で埋めると、合格水準の形になります。</p>
+        <p class="note">〈　〉の中を自分の仕事の言葉で埋めると、6つの観点がひととおりそろった形になります。</p>
       </div>
 
       <div class="block block-axes">

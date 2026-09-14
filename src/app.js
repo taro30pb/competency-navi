@@ -220,6 +220,7 @@
       el('result').hidden = true;
       el('empty').hidden = false;
       el('empty').textContent = '行動目標が空です。まず自分の言葉で書いてみてください。';
+      el('empty').className = 'empty empty-warn';   // 見せ方だけ。文面は変えていない
       return;
     }
 
@@ -279,6 +280,7 @@
     el('result').hidden = true;
     el('empty').hidden = false;
     el('empty').textContent = '行動目標を入力して「診断する」を押してください。';
+    el('empty').className = 'empty';
   });
 
   // 入力しながら結果を出したい人向け。空のときは何もしない。

@@ -1,48 +1,68 @@
 /* ==========================================================================
    コンピテンシー目標ナビ — スタイル
-   グリーンライフ産業 コーポレートブランド準拠
-   ・コーポレートグリーン（Pantone 3435C 近似 #154734）はアクセントとして使用
-   ・背景は白／生成り。見出し Noto Serif JP ／ 本文 Noto Sans JP
+
+   ★ 配色についての重要な申し送り（勝手に戻さないこと）★
+   ---------------------------------------------------------------------------
+   このアプリは、社員がここで整えた行動目標を人事評価システム
+   「あしたのクラウドHR」の評価シートへ転記するための下書き支援ツールです。
+   社員が2画面を行き来するため、画面のトンマナを評価システム側に合わせています。
+
+   そのため **このアプリに限り、green-life-brand のコーポレートグリーン
+   （Pantone 3435C／#154734）を使いません。** アクセントは評価システムと同じ
+   明るめの青（#1B6FBA）です。中村社長（代表取締役）の明確な指示による例外で、
+   ブランド規定の逸脱ではなく「転記先の画面に揃える」という業務上の判断です。
+
+   → 次に触る人へ：ブランド準拠の名目でグリーンに戻さないでください。
+     戻す場合は、評価システム側のトンマナが変わったかを必ず先に確認すること。
+     グリーンライフ産業の他の制作物は従来どおり green-life-brand に従います。
+   ---------------------------------------------------------------------------
+
+   ・背景は白〜ごく薄いグレー。面で色を使わない（業務システムの端正さ）
+   ・パネルは白い矩形＋上辺3pxの青線。角丸はほぼ無し
+   ・入力はラベル左・値右の2列テーブル型（ラベルセルは薄グレー）
+   ・書体はゴシックのみ（Noto Sans JP／Meiryo）。明朝は使わない
    ・余白は 4px の倍数で統一
    ========================================================================== */
 
 :root {
-  /* --- 色：コーポレートグリーン（面ではなくアクセント） --- */
-  --green:      #154734;  /* Pantone 3435C 近似 */
-  --green-700:  #1e5c44;  /* ホバー用 */
-  --green-200:  #c9dad2;  /* 罫線 */
-  --green-100:  #dde7e2;
-  --green-050:  #eff4f1;  /* 面 */
+  /* --- 色：アクセント（あしたのクラウドHR に合わせた青） --- */
+  --accent:       #1B6FBA;
+  --accent-dark:  #15588f;  /* ホバー・押下 */
+  --accent-line:  #1E7BC8;  /* パネル上辺の線 */
+  --accent-weak:  #eaf2fb;  /* 選択行・強調の面 */
+  --accent-edge:  #c4dbf2;  /* 薄い青の罫線 */
 
-  /* --- 色：直しどころを示す暖色（責めない色として朱赤ではなく黄土） --- */
-  --amber:      #8a6220;
-  --amber-050:  #fbf6ec;
-  --clay:       #8c4634;  /* 「書き直しが必要」バッジのみ */
+  /* --- 色：状態（意味を持つ色。必ずアイコンか文言を添える） --- */
+  --warn:         #9a6412;  /* 直しどころ（文字・アイコン） */
+  --warn-line:    #d9a441;
+  --warn-weak:    #fdf7ec;
+  --alert:        #b04437;  /* 「書き直しが必要」バッジのみ */
 
   /* --- 色：無彩 --- */
-  --ink:        #262a28;  /* 本文（K90相当） */
-  --ink-mid:    #565c58;  /* 補足文 4.5:1以上 */
-  --line:       #e3e6e2;
-  --line-soft:  #eef0ed;
-  --ground:     #f7f7f4;  /* 生成り */
+  --ink:        #333333;  /* 本文。真っ黒は使わない */
+  --ink-mid:    #5c6773;  /* 補足文（白地で4.5:1以上） */
+  --line:       #d8dde3;  /* 罫線 1px */
+  --line-soft:  #e6eaee;
+  --cell:       #f4f6f8;  /* 見出しセル・ラベルセル */
+  --ground:     #f2f4f7;  /* ページ背景 */
   --panel:      #ffffff;
 
   /* --- 余白（4pxの倍数） --- */
   --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
   --s-5: 24px; --s-6: 32px; --s-7: 40px; --s-8: 56px;
 
-  /* --- 形 --- */
-  --r-s: 4px;
-  --r-m: 8px;
-  --shadow: 0 1px 2px rgba(21, 71, 52, 0.04), 0 8px 24px rgba(21, 71, 52, 0.05);
+  /* --- 形（業務システムに合わせて角丸はほぼ無し） --- */
+  --r-s: 2px;
+  --r-m: 2px;
+  --r-btn: 3px;
 
-  /* --- 書体 --- */
-  --font-sans: "Noto Sans JP", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
-  --font-serif: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+  /* --- 書体（ゴシックのみ） --- */
+  --font-sans: "Noto Sans JP", Meiryo, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
 
   /* --- 版面 --- */
   --page: 1120px;
   --gutter: var(--s-5);
+  --label-col: 148px;  /* 2列テーブルのラベル列 */
 }
 
 * { box-sizing: border-box; }
@@ -58,36 +78,52 @@ body {
   background: var(--ground);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.7;
   font-feature-settings: "palt" 1;
-  /* 画面上端のコーポレートグリーンの細帯（ブランドの手掛かり） */
-  border-top: 4px solid var(--green);
 }
 
 /* --------------------------------------------------------------- ヘッダー */
 
+/* システムのヘッダーバー（白地・下に1pxの境界） */
 .header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .02);
+}
+
+.header-inner {
   max-width: var(--page);
   margin: 0 auto;
-  padding: var(--s-7) var(--gutter) var(--s-6);
+  padding: var(--s-5) var(--gutter);
 }
 
 .header h1 {
-  margin: 0 0 var(--s-3);
-  font-family: var(--font-serif);
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.06em;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+/* 見出し左の小さな青いしるし（評価システムのヘッダーに合わせた記号） */
+.header h1::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  margin-right: var(--s-3);
+  vertical-align: -2px;
+  background: var(--accent-line);
 }
 
 .lead {
-  margin: 0;
-  max-width: 46em;
+  margin: var(--s-2) 0 0;
+  max-width: 52em;
   color: var(--ink-mid);
-  font-size: 15px;
-  line-height: 1.9;
+  font-size: 13px;
+  line-height: 1.7;
 }
 
 /* ------------------------------------------------------------- レイアウト */
@@ -95,45 +131,45 @@ body {
 .layout {
   max-width: var(--page);
   margin: 0 auto;
-  padding: 0 var(--gutter) var(--s-8);
+  padding: var(--s-5) var(--gutter) var(--s-8);
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   gap: var(--s-5);
   align-items: start;
 }
 
+/* パネル＝白い矩形。上辺にだけ太めの青線 */
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
+  border-top: 3px solid var(--accent-line);
   border-radius: var(--r-m);
-  padding: var(--s-6);
+  padding: var(--s-5);
 }
 
 /* 結果は長くなるので、入力側は追従させて常に手の届くところに置く */
-.panel-input { position: sticky; top: var(--s-5); }
+.panel-input { position: sticky; top: var(--s-4); }
 
-.panel-result { box-shadow: var(--shadow); }
-
-/* パネル見出し（ラベル的に小さく） */
+/* パネル見出し＝青文字・太字でパネル左上 */
 .panel h2 {
-  margin: 0 0 var(--s-5);
-  padding-bottom: var(--s-3);
-  border-bottom: 1px solid var(--line-soft);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  color: var(--ink-mid);
+  margin: 0 0 var(--s-4);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: var(--accent);
 }
 
 /* 結果内のブロック見出し */
 .panel h3 {
-  margin: 0 0 var(--s-4);
-  font-family: var(--font-serif);
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  margin: 0 0 var(--s-3);
+  padding-left: var(--s-3);
+  border-left: 3px solid var(--accent-line);
+  font-size: 14px;
+  font-weight: 700;
   line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: var(--ink);
 }
 
 /* ------------------------------------------------------------------ 入力 */
@@ -147,134 +183,197 @@ body {
 
 .field-group legend {
   padding: 0;
-  margin-bottom: var(--s-3);
+  margin-bottom: var(--s-2);
   font-size: 13px;
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
   color: var(--ink-mid);
+}
+
+/* 2列テーブル（ラベル左・値右）。外周と行間を1pxの罫線で締める */
+.form-table {
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  background: var(--panel);
+  overflow: hidden;
 }
 
 /* min-width: 0 を入れないと、input の既定サイズ（size=20相当）で
    狭い画面のときに横スクロールが出る */
-.field { display: block; min-width: 0; margin-bottom: var(--s-4); }
-.field:last-child { margin-bottom: 0; }
+.field {
+  display: grid;
+  grid-template-columns: var(--label-col) minmax(0, 1fr);
+  align-items: stretch;
+  min-width: 0;
+  border-top: 1px solid var(--line);
+}
 
+.field:first-child { border-top: none; }
+
+/* 職位セレクト（割当データが無い環境では非表示）が先頭のときの二重罫線よけ */
+#role-field[hidden] + .field { border-top: none; }
+
+/* 縦に長い欄は、ラベルを上端に合わせる */
+.field-draft .field-label { align-items: flex-start; padding-top: var(--s-4); }
+
+/* ラベルセル＝薄いグレー背景。右側に1pxの区切り線 */
 .field-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  padding: var(--s-3) var(--s-4);
+  background: var(--cell);
+  border-right: 1px solid var(--line);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.6;
-  margin-bottom: var(--s-2);
 }
 
-.field-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-3);
+.field-value {
+  display: block;
+  min-width: 0;
+  padding: var(--s-2) var(--s-3);
 }
-.field-row .field { margin-bottom: 0; }
 
-.field-draft { margin-top: var(--s-5); }
+/* 行の高さはゆったり。短い入力欄は幅を絞って業務システムらしく */
+.field-value-short input[type="text"] { max-width: 200px; }
 
 input[type="text"], textarea, select {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
-  padding: 10px var(--s-3);
-  border: 1px solid #d5d9d4;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid #c3cad2;
   border-radius: var(--r-s);
   font-family: inherit;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.7;
   color: inherit;
   background: #fff;
 }
 
+select { min-height: 36px; }
+
 input[type="text"]::placeholder, textarea::placeholder {
-  color: #8b918c;
+  color: #8d959e;
 }
 
-input[type="text"]:hover, textarea:hover, select:hover { border-color: #b9c0b9; }
+input[type="text"]:hover, textarea:hover, select:hover { border-color: #9aa4ae; }
 
 input[type="text"]:focus, textarea:focus, select:focus {
-  outline: 2px solid var(--green);
-  outline-offset: 1px;
-  border-color: var(--green);
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: var(--accent);
+  background: #fff;
 }
 
-textarea { resize: vertical; min-height: 152px; }
+textarea { resize: vertical; min-height: 132px; }
+
+/* 選んだコンピテンシー項目の定義。表の中の「詳細」行のように見せる */
+.definition {
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--line);
+  background: var(--accent-weak);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink);
+}
 
 /* ------------------------------------------------------------- ボタン */
 
 .actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--s-2);
   margin-top: var(--s-5);
-  padding-top: var(--s-5);
+  padding-top: var(--s-4);
   border-top: 1px solid var(--line-soft);
 }
 
+/* 副次ボタン＝白地＋グレー枠＋濃いグレー文字 */
 .button {
-  min-height: 44px;
+  min-height: 36px;
   padding: 0 var(--s-4);
-  border: 1px solid #d5d9d4;
-  border-radius: var(--r-s);
+  border: 1px solid #c3cad2;
+  border-radius: var(--r-btn);
   background: #fff;
   color: var(--ink);
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition: background-color .15s ease, border-color .15s ease;
 }
 
-.button:hover { background: #f4f6f4; border-color: #b9c0b9; }
-.button:active { background: #ebeeec; }
+.button:hover { background: #f4f6f8; border-color: #9aa4ae; }
+.button:active { background: #e9edf1; }
 
 .button:focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* 主ボタンは画面に1つだけ */
+/* 主ボタンは画面に1つだけ。青の塗り＋白文字 */
 .button-primary {
+  min-height: 40px;
   padding: 0 var(--s-6);
-  background: var(--green);
-  border-color: var(--green);
+  background: var(--accent);
+  border-color: var(--accent);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
   margin-right: var(--s-2);
 }
 
-.button-primary:hover { background: var(--green-700); border-color: var(--green-700); }
-.button-primary:active { background: #123c2c; border-color: #123c2c; }
+.button-primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+.button-primary:active { background: #124a78; border-color: #124a78; }
 
 /* ------------------------------------------------------------ 未診断の状態 */
 
 .empty {
   margin: 0;
-  min-height: 176px;
+  min-height: 168px;
   display: grid;
   place-content: center;
   align-content: center;
   padding: var(--s-6) var(--s-5);
-  border: 1px dashed var(--green-200);
-  border-radius: var(--r-m);
-  background: var(--green-050);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-s);
+  background: var(--cell);
   color: var(--ink-mid);
-  font-size: 15px;
+  font-size: 14px;
   text-align: center;
 }
 
 .empty::before {
   content: "";
   display: block;
-  width: 32px;
-  height: 2px;
-  margin: 0 auto var(--s-4);
-  background: var(--green);
-  opacity: .5;
+  width: 28px;
+  height: 3px;
+  margin: 0 auto var(--s-3);
+  background: var(--accent-edge);
+}
+
+/* 入力が空のまま「診断する」を押したとき。色だけでなく記号と文言で示す */
+.empty-warn {
+  border: 1px solid var(--warn-line);
+  background: var(--warn-weak);
+  color: var(--warn);
+}
+
+.empty-warn::before {
+  content: "!";
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--warn-line);
+  background: #fff;
+  color: var(--warn);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 22px;
 }
 
 /* ---------------------------------------------------------------- 判定 */
@@ -283,26 +382,25 @@ textarea { resize: vertical; min-height: 152px; }
   display: flex;
   align-items: center;
   gap: var(--s-5);
-  padding: var(--s-5);
-  background: var(--green-050);
-  border: 1px solid var(--green-100);
-  border-radius: var(--r-m);
+  padding: var(--s-4) var(--s-5);
+  background: var(--accent-weak);
+  border: 1px solid var(--accent-edge);
+  border-radius: var(--r-s);
 }
 
 .score {
   flex: none;
-  font-family: var(--font-serif);
-  font-size: 44px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.02em;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
 
 .score-max {
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--ink-mid);
   letter-spacing: 0;
 }
@@ -311,40 +409,34 @@ textarea { resize: vertical; min-height: 152px; }
 
 .verdict-text p {
   margin: var(--s-2) 0 0;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.7;
   color: var(--ink-mid);
 }
 
 .badge {
   display: inline-block;
-  padding: 2px var(--s-3);
-  border-radius: 999px;
+  padding: 1px var(--s-3);
+  border-radius: var(--r-btn);
   background: #fff;
   border: 1px solid var(--line);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.8;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
-.badge-pass { border-color: var(--green); color: var(--green); }
-.badge-near { border-color: var(--amber); color: var(--amber); }
-.badge-weak { border-color: var(--clay); color: var(--clay); }
+.badge-pass { border-color: var(--accent); color: var(--accent); }
+.badge-near { border-color: var(--warn-line); color: var(--warn); }
+.badge-weak { border-color: var(--alert); color: var(--alert); }
 
 /* -------------------------------------------------------- 結果内のブロック */
 
-.block { margin-top: var(--s-7); }
+.block { margin-top: var(--s-6); }
 
-/* 主役の「上長から見た指摘」だけ、間を広く取って独立させる */
-.block-comments {
-  margin-top: var(--s-8);
-  padding-left: var(--s-4);
-  border-left: 3px solid var(--green);
-}
-
-.block-comments h3 { margin-bottom: var(--s-4); }
+/* 主役の「上長から見た指摘」は間を広く取って独立させる */
+.block-comments { margin-top: var(--s-6); }
 
 /* ------------------------------------------------------ 上長から見た指摘 */
 
@@ -353,35 +445,38 @@ textarea { resize: vertical; min-height: 152px; }
   margin: 0;
   padding: 0;
   counter-reset: comment;
-  display: grid;
-  gap: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  overflow: hidden;
 }
 
+/* 1件＝表の1行。番号は左のセル風に置く */
 .comment {
   position: relative;
-  padding: var(--s-4) var(--s-4) var(--s-4) 52px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--amber);
-  border-radius: var(--r-s);
-  background: var(--amber-050);
-  font-size: 15px;
-  line-height: 1.85;
+  padding: var(--s-3) var(--s-4) var(--s-3) 48px;
+  border-top: 1px solid var(--line);
+  border-left: 3px solid var(--warn-line);
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.8;
 }
+
+.comment:first-child { border-top: none; }
 
 .comment::before {
   counter-increment: comment;
   content: counter(comment);
   position: absolute;
-  left: var(--s-4);
-  top: 18px;
+  left: var(--s-3);
+  top: 14px;
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #fff;
-  border: 1px solid var(--amber);
-  color: var(--amber);
+  background: var(--warn-weak);
+  border: 1px solid var(--warn-line);
+  color: var(--warn);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 20px;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -393,41 +488,48 @@ textarea { resize: vertical; min-height: 152px; }
   margin: 0 var(--s-2) 2px 0;
   padding: 0 var(--s-2);
   border-radius: var(--r-s);
-  background: #fff;
-  border: 1px solid var(--amber);
-  color: var(--amber);
+  background: var(--warn-weak);
+  border: 1px solid var(--warn-line);
+  color: var(--warn);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.7;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   white-space: nowrap;
-  vertical-align: 2px;
+  vertical-align: 1px;
 }
 
-/* 良い点は緑＋チェック。色だけに頼らずマークでも区別する */
+/* 良い点は青＋チェック。色だけに頼らずマークでも区別する */
 .comment-praise {
-  border-left-color: var(--green);
-  background: var(--green-050);
+  border-left-color: var(--accent-line);
+  background: var(--accent-weak);
 }
 
 .comment-praise::before {
   counter-increment: none;
   content: "✓";
-  border-color: var(--green);
-  color: var(--green);
+  background: #fff;
+  border-color: var(--accent);
+  color: var(--accent);
   font-size: 13px;
+}
+
+.comment-praise .comment-tag {
+  background: #fff;
+  border-color: var(--accent-edge);
+  color: var(--accent);
 }
 
 /* ------------------------------------------------------------ 書き直しの型 */
 
 .block-skeleton .skeleton {
   margin: 0;
-  padding: var(--s-5);
-  border: 1px solid var(--green-200);
-  border-radius: var(--r-m);
+  padding: var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
   background: #fff;
-  font-size: 15px;
-  line-height: 2.2;
+  font-size: 14px;
+  line-height: 2.1;
 }
 
 /* 〈　〉は自分で埋める枠。埋める場所だと一目で分かるようにする */
@@ -435,15 +537,15 @@ textarea { resize: vertical; min-height: 152px; }
   display: inline-block;
   margin: 0 1px;
   padding: 0 var(--s-2);
-  border-bottom: 2px solid var(--green-200);
-  background: var(--green-050);
-  color: var(--green);
+  border-bottom: 2px solid var(--accent-edge);
+  background: var(--accent-weak);
+  color: var(--accent);
   font-weight: 500;
   white-space: nowrap;
 }
 
 .note {
-  margin: var(--s-3) 0 0;
+  margin: var(--s-2) 0 0;
   font-size: 13px;
   line-height: 1.7;
   color: var(--ink-mid);
@@ -451,48 +553,85 @@ textarea { resize: vertical; min-height: 152px; }
 
 /* ---------------------------------------------------------------- 観点別 */
 
-.block-axes { margin-top: var(--s-7); }
+.block-axes { margin-top: var(--s-6); }
 
-.axes { list-style: none; margin: 0; padding: 0; }
+/* 観点別は表。ラベル列は薄グレー、点数は右寄せ */
+.axes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  overflow: hidden;
+}
 
 .axis {
   display: grid;
-  grid-template-columns: 104px 1fr auto;
+  grid-template-columns: 150px minmax(0, 1fr) 48px;
+  grid-template-areas:
+    "name meter score"
+    "name hint  hint";
   align-items: center;
-  gap: var(--s-1) var(--s-3);
-  padding: var(--s-3) 0;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--line);
 }
 
-.axis:first-child { border-top: none; padding-top: 0; }
+.axis:first-child { border-top: none; }
 
-.axis-name { font-size: 14px; font-weight: 500; }
+.axis-name {
+  grid-area: name;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: var(--s-3) var(--s-3);
+  background: var(--cell);
+  border-right: 1px solid var(--line);
+  font-size: 14px;
+  font-weight: 500;
+}
 
-.axis-meter { display: flex; gap: 5px; }
+/* 観点別に添えるSMARTの文字 */
+.axis-letter {
+  display: inline-block;
+  min-width: 16px;
+  margin-right: var(--s-2);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.axis-meter {
+  grid-area: meter;
+  display: flex;
+  gap: 5px;
+  padding: var(--s-3) var(--s-3) var(--s-1);
+}
 
 .dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #e6e9e5;
+  background: #e2e6ea;
 }
 
-.dot-on { background: var(--green); }
-.axis-weak .dot-on { background: var(--amber); }
+.dot-on { background: var(--accent); }
+.axis-weak .dot-on { background: var(--warn-line); }
 
 .axis-score {
+  grid-area: score;
+  align-self: start;
+  padding: var(--s-3) var(--s-3) var(--s-1) 0;
   font-size: 14px;
-  font-weight: 600;
-  color: var(--ink-mid);
+  font-weight: 700;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
   text-align: right;
-  min-width: 16px;
 }
 
-.axis-weak .axis-score { color: var(--amber); }
+.axis-weak .axis-score { color: var(--warn); }
 
 .axis-hint {
-  grid-column: 1 / -1;
+  grid-area: hint;
+  padding: 0 var(--s-3) var(--s-3);
   font-size: 13px;
   line-height: 1.7;
   color: var(--ink-mid);
@@ -501,15 +640,18 @@ textarea { resize: vertical; min-height: 152px; }
 /* ---------------------------------------------------------------- フッター */
 
 .footer {
-  max-width: var(--page);
-  margin: 0 auto;
-  padding: var(--s-5) var(--gutter) var(--s-7);
   border-top: 1px solid var(--line);
-  font-size: 13px;
-  color: var(--ink-mid);
+  background: var(--panel);
 }
 
-.footer p { margin: 0; letter-spacing: 0.06em; }
+.footer p {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: var(--s-4) var(--gutter);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink-mid);
+}
 
 /* ------------------------------------------------------------- 画面幅対応 */
 
@@ -521,38 +663,54 @@ textarea { resize: vertical; min-height: 152px; }
 @media (max-width: 600px) {
   :root { --gutter: 16px; }
 
-  body { font-size: 15px; }
+  .header-inner { padding: var(--s-4) var(--gutter); }
+  .header h1 { font-size: 18px; }
+  .header h1::before { height: 16px; margin-right: var(--s-2); }
+  .lead { font-size: 13px; }
 
-  .header { padding: var(--s-6) var(--gutter) var(--s-5); }
-  .header h1 { font-size: 23px; }
-  .lead { font-size: 14px; }
+  .layout { padding: var(--s-4) var(--gutter) var(--s-7); gap: var(--s-4); }
+  .panel { padding: var(--s-4); }
 
-  .layout { padding-bottom: var(--s-7); gap: var(--s-4); }
-  .panel { padding: var(--s-5) var(--s-4); }
+  /* 狭い画面では2列テーブルを上下に積む（ラベル行＋値行） */
+  .field { display: block; }
 
-  .panel h3 { font-size: 17px; }
+  .field-label {
+    display: block;
+    padding: var(--s-2) var(--s-3);
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
 
-  .field-row { gap: var(--s-2); }
+  .field-value { padding: var(--s-3); }
+  .field-value-short input[type="text"] { max-width: 160px; }
 
-  .actions { gap: var(--s-2); }
-  .button { flex: 1 1 auto; padding: 0 var(--s-3); }
-  .button-primary { flex: 1 1 100%; margin-right: 0; }
+  /* 指で押す画面なので、入力欄は44px確保。16px未満だとiOSで拡大される */
+  input[type="text"], textarea, select {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 8px 10px;
+  }
+  textarea { min-height: 140px; }
+
+  .button { flex: 1 1 auto; min-height: 44px; padding: 0 var(--s-3); }
+  .button-primary { flex: 1 1 100%; min-height: 46px; margin-right: 0; }
 
   .verdict {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--s-3);
+    gap: var(--s-2);
     padding: var(--s-4);
   }
-  .score { font-size: 38px; }
+  .score { font-size: 30px; }
 
-  .block { margin-top: var(--s-6); }
-  .block-comments { margin-top: var(--s-7); padding-left: var(--s-3); }
+  .block { margin-top: var(--s-5); }
+  .block-comments { margin-top: var(--s-5); }
 
-  .comment { padding: var(--s-3) var(--s-3) var(--s-3) 44px; font-size: 14.5px; }
-  .comment::before { left: var(--s-3); top: 14px; }
+  .comment { padding: var(--s-3) var(--s-3) var(--s-3) 40px; }
+  .comment::before { left: var(--s-2); top: 13px; }
 
-  .block-skeleton .skeleton { padding: var(--s-4); font-size: 14.5px; line-height: 2; }
+  .block-skeleton .skeleton { padding: var(--s-3); line-height: 2; }
 
   /* 狭い画面では枠が1行ずつ改行されて読みにくいので、枠の中でも折り返す */
   .slot {
@@ -562,34 +720,40 @@ textarea { resize: vertical; min-height: 152px; }
     box-decoration-break: clone;
   }
 
-  .empty { min-height: 144px; }
+  .empty { min-height: 140px; }
 
-  .axis { grid-template-columns: 1fr auto; }
-  .axis-meter { grid-column: 1 / -1; }
+  /* 観点別も上下に積む。点数は行の右端に置く */
+  .axis {
+    grid-template-columns: minmax(0, 1fr) 40px;
+    grid-template-areas:
+      "name  score"
+      "meter meter"
+      "hint  hint";
+  }
+
+  .axis-name {
+    border-right: none;
+    padding: var(--s-2) var(--s-3);
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .axis-score {
+    align-self: center;
+    padding: var(--s-2) var(--s-3) var(--s-2) 0;
+    background: var(--cell);
+    border-bottom: 1px solid var(--line-soft);
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .axis-meter { padding: var(--s-3) var(--s-3) var(--s-1); }
+  .axis-hint { padding: 0 var(--s-3) var(--s-3); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
 
-/* 選んだコンピテンシー項目の定義。書き出しの手がかりとして見せる */
-.definition {
-  margin: -4px 0 0;
-  padding: 12px 14px;
-  background: var(--accent-weak, #eef2ee);
-  border-radius: 3px;
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-/* 観点別に添えるSMARTの文字 */
-.axis-letter {
-  display: inline-block;
-  min-width: 18px;
-  margin-right: 8px;
-  color: var(--accent, #154734);
-  font-weight: 600;
-  font-size: 12px;
-}
-
-.note-legend { margin: -4px 0 12px; }
+.note-legend { margin: calc(var(--s-1) * -1) 0 var(--s-3); }
