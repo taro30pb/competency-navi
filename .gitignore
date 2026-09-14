@@ -1,0 +1,26 @@
+# OS / エディタ
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# 依存・ビルド成果物
+node_modules/
+dist/
+build/
+*.log
+
+# 認証情報（絶対にコミットしない）
+.env
+.env.*
+*.key
+clasp.json
+.clasprc.json
+
+# 社内の実データ置き場（個人名・評価内容を含むため公開しない）
+_private/
+_archive/
+*.xlsx
+*.xls
+*.csv
