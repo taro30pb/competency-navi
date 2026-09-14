@@ -121,6 +121,12 @@ def build_assignments(z):
             kind = '付与型'
 
         item = {'code': code, 'name': name, 'definition': cells.get(5, ''), 'kind': kind}
+
+        # 付与型は会社が1〜4の評価尺度を示している。列7〜10がそれにあたる。
+        if kind == '付与型':
+            levels = [cells.get(c, '') for c in (7, 8, 9, 10)]
+            if any(levels):
+                item['levels'] = levels
         # 選定理由は「なぜこの項目を選んだか」という評価者からのメッセージ。
         # どう書けば評価されるかの手がかりになるので取り込む（社内限定のファイル側）。
         message = cells.get(6, '')

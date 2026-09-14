@@ -892,3 +892,15 @@ textarea { resize: vertical; min-height: 132px; }
 
 /* 段階が作れなかったときの注記 */
 .levels-note { color: var(--ink-light); }
+
+/* 会社から示されている評価尺度（付与型） */
+.given-levels { margin: -4px 0 0; border-top: none; padding-top: 0; }
+
+.given-levels > summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--accent);
+  padding: 4px 0;
+}
+
+.given-levels .levels-list { padding: 8px 12px; background: var(--accent-weak); }

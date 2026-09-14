@@ -28,6 +28,12 @@ function buildPrompt(input) {
     ? input.competency.message
     : '';
 
+  // 付与型は会社が評価尺度を決めている。目標文を作るのではなく、
+  // その尺度を上げるために何をするかを提案させる。
+  const givenLevels = (input.competency && input.competency.kind === '付与型' && input.competency.levels)
+    ? input.competency.levels.filter(function (v) { return v; })
+    : [];
+
   return [
     'あなたは組織開発と人事評価の専門家で、コンピテンシー評価（行動特性評価）のスペシャリストです。',
     'グリーンライフ産業株式会社の社員が書いた行動目標の原案を、上司が期末に客観的に確認でき、',
@@ -40,6 +46,11 @@ function buildPrompt(input) {
     message ? '' : null,
     message ? 'この項目が選ばれた理由（評価者から社員へのメッセージ。改善案はこの意図に沿わせること）：' : null,
     message ? message : null,
+    givenLevels.length > 0 ? '' : null,
+    givenLevels.length > 0 ? 'この項目は付与型で、会社が次の評価尺度を定めている。本人が目標文を作る必要はない。' : null,
+    givenLevels.length > 0 ? '改善案は「この尺度の段階を1つ上げるために、本人が何をするか」を書くこと。' : null,
+    givenLevels.length > 0 ? '評点基準（levels）は会社の尺度をそのまま使うので、新たに作らず空の配列で返すこと。' : null,
+    givenLevels.length > 0 ? givenLevels.map(function (t, n) { return '  ' + (n + 1) + '：' + t; }).join('\n') : null,
     '',
     '# この会社の評価の進み方（改善案はこの周期に合わせること）',
     '- 上長による評価は3か月ごと（四半期ごと）に行われる。目標は3か月で達成しきれる粒度にする。',
