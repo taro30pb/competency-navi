@@ -581,3 +581,15 @@ textarea { resize: vertical; min-height: 152px; }
   font-size: 13px;
   line-height: 1.7;
 }
+
+/* 観点別に添えるSMARTの文字 */
+.axis-letter {
+  display: inline-block;
+  min-width: 18px;
+  margin-right: 8px;
+  color: var(--accent, #154734);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.note-legend { margin: -4px 0 12px; }

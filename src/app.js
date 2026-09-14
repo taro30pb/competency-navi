@@ -10,7 +10,6 @@
     name: '実施後レビュー期限遵守率',
     current: '80%',
     target: '100%',
-    weight: '0.30',
     draft: '実施後レビューを忘れないように、期限をしっかり守ってやるようにします。',
   };
 
@@ -75,7 +74,9 @@
       sel.appendChild(own);
     }
 
-    if (master.length > 0) {
+    // 職位を選んだ人には、自分に関係する項目だけを出す。
+    // 選んでいない人（割当データが無い環境を含む）には83項目すべてを出す。
+    if (master.length > 0 && roleIndex === '') {
       const all = document.createElement('optgroup');
       all.label = '83項目から選ぶ';
       master.forEach(function (it) {
@@ -118,7 +119,11 @@
 
       const name = document.createElement('span');
       name.className = 'axis-name';
-      name.textContent = axis.label;
+      const letter = document.createElement('span');
+      letter.className = 'axis-letter';
+      letter.textContent = axis.smart;
+      name.appendChild(letter);
+      name.appendChild(document.createTextNode(axis.label));
 
       const meter = document.createElement('span');
       meter.className = 'axis-meter';
@@ -240,7 +245,6 @@
     el('mbo-name').value = SAMPLE.name;
     el('mbo-current').value = SAMPLE.current;
     el('mbo-target').value = SAMPLE.target;
-    el('mbo-weight').value = SAMPLE.weight;
     el('draft').value = SAMPLE.draft;
     run();
   }
@@ -266,7 +270,7 @@
   if (window.location.hash === '#demo') fillSample();
 
   el('clear').addEventListener('click', function () {
-    ['mbo-name', 'mbo-current', 'mbo-target', 'mbo-weight', 'draft'].forEach(function (id) {
+    ['mbo-name', 'mbo-current', 'mbo-target', 'draft'].forEach(function (id) {
       el(id).value = '';
     });
     el('role').value = '';

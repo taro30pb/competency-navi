@@ -60,7 +60,7 @@ const ROOT_CAUSES = [
     },
     message: function (r) {
       const words = r.detected.vague.slice(0, 3).map(displayWord).join('」「');
-      return '「' + words + '」は気持ちであって行動ではありません。'
+      return '［S 具体的］「' + words + '」は気持ちであって行動ではありません。'
         + '上長はこの書き方では達成・未達を判定できないので、目に見える動きに置き換えてください。';
     },
   },
@@ -70,7 +70,7 @@ const ROOT_CAUSES = [
       return r.detected.outcomes.length > 0 && r.detected.actions.length === 0;
     },
     message: function () {
-      return '書かれているのは成果であって、行動ではありません。'
+      return '［A 達成できる］書かれているのは成果であって、行動ではありません。'
         + 'その成果を生む動きは何かを考え、件数で数えられる行動に分解してください。';
     },
   },
@@ -80,7 +80,7 @@ const ROOT_CAUSES = [
       return r.detected.dependents.length > 0;
     },
     message: function (r) {
-      return '「' + r.detected.dependents[0] + '」のように、他の人が動くことを前提にした書き方が入っています。'
+      return '［A 達成できる］「' + r.detected.dependents[0] + '」のように、他の人が動くことを前提にした書き方が入っています。'
         + 'SMARTのA（達成できる）は、自分の判断で動かせることが条件です。'
         + '相手が動かなかった場合でも自分が実行できる行動に言い換えてください。';
     },
@@ -91,7 +91,7 @@ const ROOT_CAUSES = [
       return r.detected.growthRatio !== null && r.detected.growthRatio >= 3 && r.detected.quantities.length === 0;
     },
     message: function (r, mbo) {
-      return mbo.current + 'から' + mbo.target + 'は現状の3倍以上です。'
+      return '［A 達成できる］' + mbo.current + 'から' + mbo.target + 'は現状の3倍以上です。'
         + '意気込みとしては良いのですが、SMARTのA（達成できる）の観点では、'
         + '毎週あるいは毎日どれだけ積み上げれば届くのかを数字で示す必要があります。';
     },
@@ -103,7 +103,7 @@ const ROOT_CAUSES = [
         && r.axes.filter(function (a) { return a.key === 'linkage'; })[0].score <= 2;
     },
     message: function (r, mbo) {
-      return mbo.current + '→' + mbo.target + 'への逆算（毎月あるいは毎週どれだけ積み上げるのか）が抜けています。'
+      return '［M 測れる］' + mbo.current + '→' + mbo.target + 'への逆算（毎月あるいは毎週どれだけ積み上げるのか）が抜けています。'
         + '差を埋める量を自分で計算し、その数字を目標に書き込んでください。';
     },
   },
@@ -173,7 +173,7 @@ function buildAdvice(result, mbo) {
   // 選んだ項目に効く行動かどうかは、言葉の一致では判定できない（「変化」と「変わる場面」は
   // 同じことを言っているが文字は違う）。決めつけずに、本人に確認してもらう。
   if (mbo.competency) {
-    list.push('〈確認〉この行動は「' + mbo.competency.name + '（' + mbo.competency.definition
+    list.push('［R 指標とつながる］この行動は「' + mbo.competency.name + '（' + mbo.competency.definition
       + '）」に効きますか。上長はこの項目で見ます。ずれていると感じたら、'
       + '項目の言葉に寄せて書き直してください。');
   }
