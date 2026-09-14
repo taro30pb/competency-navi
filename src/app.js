@@ -7,19 +7,11 @@
   const el = function (id) { return document.getElementById(id); };
 
   const SAMPLE = {
-    name: '実施後レビュー期限遵守率',
-    current: '80%',
-    target: '100%',
     draft: '実施後レビューを忘れないように、期限をしっかり守ってやるようにします。',
   };
 
   function readMbo() {
-    return {
-      name: el('mbo-name').value,
-      current: el('mbo-current').value,
-      target: el('mbo-target').value,
-      competency: selectedCompetency(),
-    };
+    return { competency: selectedCompetency() };
   }
 
   // ---- コンピテンシー項目の選択 ----------------------------------------
@@ -243,9 +235,6 @@
   }
 
   function fillSample() {
-    el('mbo-name').value = SAMPLE.name;
-    el('mbo-current').value = SAMPLE.current;
-    el('mbo-target').value = SAMPLE.target;
     el('draft').value = SAMPLE.draft;
     run();
   }
@@ -271,7 +260,7 @@
   if (window.location.hash === '#demo') fillSample();
 
   el('clear').addEventListener('click', function () {
-    ['mbo-name', 'mbo-current', 'mbo-target', 'draft'].forEach(function (id) {
+    ['draft'].forEach(function (id) {
       el(id).value = '';
     });
     el('role').value = '';

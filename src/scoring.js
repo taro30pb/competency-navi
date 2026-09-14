@@ -9,9 +9,12 @@
  *   具体性      S  Specific    はっきりしているか
  *   定量性      M  Measurable  数えられるか
  *   手段        A  Achievable  自分の力でやれるか
- *   KPI連動     R  Relevant    会社の指標とつながっているか
  *   期限・頻度   T  Time-bound  いつまでかが決まっているか
  *   報告・振返り  ＋  SMARTを保つ仕組み（SMARTERのE・R）
+ *
+ * R（Relevant＝選んだコンピテンシー項目に効くか）は採点しない。
+ * 言葉の一致では測れないため（「変化に応じる」と「変わる場面で試す」は同じことを指す）。
+ * 指摘の中で本人に確認してもらい、判定はAIにつないだ後に任せる。
  */
 
 /** 気持ち・態度を表すだけで、行動として測れない言葉 */
@@ -50,6 +53,23 @@ const REPORT_WORDS = ['報告', '共有', '提出', '朝礼', 'ミーティン�
 /** 振り返り・立て直しを表す言葉 */
 const REVIEW_WORDS = ['振り返', 'ふり返', '見直', 'レビュー', '改善', '修正', 'リカバリ', '調整', '検証', '再発防止', '対策'];
 
+/**
+ * 行動の言葉が「動詞の形」で使われているかを見る。
+ * 「実施後レビュー」は名詞なので行動と数えないが、「レビューする」「点検して」は数える。
+ */
+function findActions(text) {
+  return ACTION_VERBS.filter(function (w) {
+    let from = 0;
+    while (true) {
+      const at = text.indexOf(w, from);
+      if (at === -1) return false;
+      const after = text.slice(at + w.length, at + w.length + 3);
+      if (/^(する|し[てたまなよ]?|させ|され|でき|を行|を実施|に行)/.test(after)) return true;
+      from = at + 1;
+    }
+  });
+}
+
 /** 文章中に含まれる語を拾う */
 function findWords(text, words) {
   return words.filter(function (w) { return text.indexOf(w) !== -1; });
@@ -72,31 +92,6 @@ function findQuantities(text) {
   return toHalfWidth(text).match(/\d+(?:\.\d+)?\s*(?:%|％|件|名|人|回|枚|社|店|校|時間|円|万円)/g) || [];
 }
 
-/** 2つの文字列に共通して現れる、いちばん長い部分の長さ */
-function longestCommonSubstring(a, b) {
-  if (!a || !b) return 0;
-  let best = 0;
-  for (let i = 0; i < a.length; i++) {
-    for (let j = i + best + 1; j <= a.length; j++) {
-      const piece = a.slice(i, j);
-      if (b.indexOf(piece) === -1) break;
-      best = piece.length;
-    }
-  }
-  return best;
-}
-
-/**
- * 現状値から目標値への伸び方を測る。
- * 「3件→8件」なら2.67倍。数値が読めないときは null を返す。
- */
-function growthRatio(current, target) {
-  const c = parseFloat(String(current).replace(/[^\d.]/g, ''));
-  const t = parseFloat(String(target).replace(/[^\d.]/g, ''));
-  if (!isFinite(c) || !isFinite(t) || c <= 0) return null;
-  return t / c;
-}
-
 /** 1〜5点の範囲に収める */
 function clamp(score) {
   return Math.max(1, Math.min(5, score));
@@ -105,16 +100,13 @@ function clamp(score) {
 /**
  * 6観点で採点する。
  * draft … 自己設定の行動目標（初稿）
- * mbo   … 関連するKPI { name, current, target } と、選んだコンピテンシー項目
+ * mbo   … 選んだコンピテンシー項目 { competency }
  */
 function scoreDraft(draft, mbo) {
   mbo = mbo || {};
   const text = (draft || '').trim();
-  const mboName = (mbo.name || '').trim();
   const vague = findWords(text, VAGUE_WORDS);
-  // 「実施後レビュー期限遵守率」のように指標名そのものに含まれる語は、
-  // 本人の行動ではなく指標の名前なので、手段として数えない。
-  const actions = findWords(text, ACTION_VERBS).filter(function (w) { return mboName.indexOf(w) === -1; });
+  const actions = findActions(text);
   const systems = findWords(text, SYSTEM_WORDS);
   const deadlines = findWords(text, DEADLINE_WORDS);
   const frequencies = findWords(text, FREQUENCY_WORDS);
@@ -123,12 +115,6 @@ function scoreDraft(draft, mbo) {
   const outcomes = findWords(text, OUTCOME_WORDS);
   const dependents = findWords(text, DEPENDENT_WORDS);
   const quantities = findQuantities(text);
-  const ratio = growthRatio(mbo.current, mbo.target);
-
-  const half = toHalfWidth(text);
-  const target = String(mbo.target || '').replace(/[^\d.]/g, '');
-  const hasTarget = target !== '' && half.indexOf(target) !== -1;
-  const overlap = longestCommonSubstring(mboName, text);
 
   // 観点ごとに3つの条件を見て、満たした数＋1を点数とする（1〜4点）。
   // 社のコンピテンシー評価が4点満点なので、それに合わせている。
@@ -157,34 +143,25 @@ function scoreDraft(draft, mbo) {
   axis('method', '手段', 'A', '結果ではなく、自分が動かせる行動で書かれているか', [
     actions.length >= 1,
     actions.length >= 2 || systems.length >= 1,
-    // 他人任せでなく、成果の言いっぱなしでもなく、無茶な跳ね上がりでもない
-    dependents.length === 0
-      && !(outcomes.length > 0 && actions.length === 0)
-      && !(ratio !== null && ratio >= 3 && quantities.length === 0),
+    // 他人任せでなく、成果の言いっぱなしでもない
+    dependents.length === 0 && !(outcomes.length > 0 && actions.length === 0),
   ]);
 
-  // ④ KPI連動（R 指標とつながる）
-  axis('linkage', 'KPI連動', 'R', '対応する指標と、現状値→目標値の逆算が入っているか', [
-    overlap >= 2,
-    overlap >= 4,
-    hasTarget,
-  ]);
-
-  // ⑤ 期限・頻度（T 期限がある）
+  // ④ 期限・頻度（T 期限がある）
   axis('timing', '期限・頻度', 'T', 'いつまでに・どのくらいの頻度で、が決まっているか', [
     frequencies.length + deadlines.length >= 1,
     frequencies.length >= 1 && deadlines.length >= 1,
     frequencies.length + deadlines.length >= 3,
   ]);
 
-  // ⑥ 報告・振返り（＋ 見直す）
+  // ⑤ 報告・振返り（＋ 見直す）
   axis('followup', '報告・振返り', '＋', '誰に報告し、ずれたときにどう立て直すかがあるか', [
     reports.length >= 1,
     reviews.length >= 1,
     reports.length >= 1 && (frequencies.length >= 1 || deadlines.length >= 1),
   ]);
 
-  // 最終点は6観点の平均。小数第1位まで出す（例 3.2／4）
+  // 最終点は5観点の平均。小数第1位まで出す（例 3.2／4）
   let sum = 0;
   axes.forEach(function (a) { sum += a.score; });
   const total = Math.round((sum / axes.length) * 10) / 10;
@@ -197,7 +174,7 @@ function scoreDraft(draft, mbo) {
     detected: {
       vague: vague, actions: actions, systems: systems, deadlines: deadlines,
       frequencies: frequencies, reports: reports, reviews: reviews,
-      outcomes: outcomes, quantities: quantities, dependents: dependents, growthRatio: ratio,
+      outcomes: outcomes, quantities: quantities, dependents: dependents,
     },
   };
 }

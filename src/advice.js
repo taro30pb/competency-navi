@@ -12,7 +12,7 @@ const SMART_MEANING = {
   'S': { word: 'Specific', label: '具体的', note: '誰の何を、どの場面で' },
   'M': { word: 'Measurable', label: '測れる', note: '件数・人数・％で数えられる' },
   'A': { word: 'Achievable', label: '達成できる', note: '自分の力で動かせて、無理のない量' },
-  'R': { word: 'Relevant', label: '指標とつながる', note: '担当するKPI・コンピテンシーに効く' },
+  'R': { word: 'Relevant', label: '項目に効く', note: '選んだコンピテンシー項目に効く（点数にせず、指摘の中で確認する）' },
   'T': { word: 'Time-bound', label: '期限がある', note: 'いつまでに・どの頻度で' },
   '＋': { word: 'Evaluate & Review', label: '見直す', note: '報告と立て直しの仕組み' },
 };
@@ -85,35 +85,12 @@ const ROOT_CAUSES = [
         + '相手が動かなかった場合でも自分で進められる行動を1つ足しておくと安心です。';
     },
   },
-  {
-    key: 'stretch',
-    test: function (r) {
-      return r.detected.growthRatio !== null && r.detected.growthRatio >= 3 && r.detected.quantities.length === 0;
-    },
-    message: function (r, mbo) {
-      return '［A 達成できる］' + mbo.current + 'から' + mbo.target + 'は現状の3倍以上です。'
-        + '意気込みとしては良いのですが、SMARTのA（達成できる）の観点では、'
-        + '毎週あるいは毎日どれだけ積み上げれば届くのかを書いておくと、達成の道筋が見えます。';
-    },
-  },
-  {
-    key: 'backcast',
-    test: function (r, mbo) {
-      return Boolean(mbo && mbo.current && mbo.target)
-        && r.axes.filter(function (a) { return a.key === 'linkage'; })[0].score <= 2;
-    },
-    message: function (r, mbo) {
-      return '［M 測れる］' + mbo.current + '→' + mbo.target + 'への逆算（毎月あるいは毎週どれだけ積み上げるのか）が抜けています。'
-        + '差を埋める量を自分で計算して書いておくと、途中で軌道修正しやすくなります。';
-    },
-  },
 ];
 
 /** 観点ごとの指摘文。点数が低いときに出す */
 const AXIS_ADVICE = {
   specificity: '［S 具体的］誰の何を対象にするのかが読み取れません。担当する人数・件数・範囲を一言添えると、ぐっと伝わります。',
   quantity: '［M 測れる］数字が入っていないため、やったかどうかを後から数えにくくなります。件数・人数・％のいずれかを入れておくと、期末の説明が楽になります。',
-  linkage: '［R 指標とつながる］関連するKPIとのつながりが見えません。指標名や、現状値から目標値までの差に触れておくと、何に効く行動かが伝わります。',
   method: '［A 達成できる］何をするのかが動作になっていません。「提案する」「一覧化する」「同行する」のように、自分が動かせる行動の形にすると進めやすくなります。',
   timing: '［T 期限がある］いつやるのかが決まっていません。「毎週金曜に」「月末までに」のように、頻度か期限のどちらかがあると、後回しになりにくくなります。',
   followup: '［＋ 見直す］進み具合を誰にどう報告するか、遅れたときにどう立て直すかがありません。報告の場と、遅れたときの手当てを書き添えておくと、途中で止まりません。',
@@ -123,7 +100,6 @@ const AXIS_ADVICE = {
 const AXIS_PRAISE = {
   specificity: '対象がはっきり書けています。',
   quantity: '数字で数えられる形になっています。',
-  linkage: 'KPIとのつながりが取れています。',
   method: '行動が具体的に書けています。',
   timing: '期限と頻度が決まっています。',
   followup: '報告と振り返りの仕組みが入っています。',
@@ -192,15 +168,13 @@ function buildAdvice(result, mbo) {
  */
 function buildSkeleton(result, mbo) {
   mbo = mbo || {};
-  const indicator = mbo.name || '〈指標名〉';
-  const current = mbo.current || '〈現状値〉';
-  const target = mbo.target || '〈目標値〉';
+  const item = mbo.competency ? mbo.competency.name : '選んだ項目';
 
-  // SMARTの順（S→M→A→R→T→＋）に枠が並ぶようにしている
+  // SMARTの順（S→M→A→T→＋）に枠が並ぶようにしている
   return '〈対象と件数：S〉に対して〈自分が動かせる行動：A〉を〈頻度・期限：T〉に実施し、'
-    + '〈行動の量：M〉を積み上げることで、'
-    + indicator + 'を' + current + 'から' + target + 'にする〈R〉。'
-    + '進捗は〈頻度〉に〈報告先〉へ報告し、遅れた場合は〈立て直しの手当て〉を行う〈＋〉。';
+    + '〈行動の量：M〉を積み上げる。'
+    + '進捗は〈頻度〉に〈報告先〉へ報告し、遅れた場合は〈立て直しの手当て〉を行う〈＋〉。'
+    + 'これにより「' + item + '」の行動として示す。';
 }
 
 if (typeof module !== 'undefined') {
