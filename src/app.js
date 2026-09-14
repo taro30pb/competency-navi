@@ -360,6 +360,7 @@
       competency: mbo.competency,
     }).then(function (result) {
       renderImprovement(result.improved, mbo, true, result.evidence);
+      renderLevels(result.indicator, result.levels);
       if (result.relevance) setRelevance(result.relevance);
       if (result.points.length > 0) addAiPoints(result.points);
     }).catch(function (error) {
@@ -370,6 +371,31 @@
       button.textContent = 'AIに改善案を書いてもらう';
     });
   });
+
+  /**
+   * 評点の付け方（1〜4）を出す。上長がこれを見れば点数を機械的に決められる。
+   * 御社のコンピテンシー評価が4点満点であることに合わせている。
+   */
+  function renderLevels(indicator, levels) {
+    const box = el('levels');
+    const list = el('levels-list');
+    list.innerHTML = '';
+    if (!levels || levels.length === 0) {
+      box.hidden = true;
+      return;
+    }
+    el('levels-indicator').textContent = indicator ? '（' + indicator + '）' : '';
+    levels.forEach(function (text, i) {
+      const li = document.createElement('li');
+      const num = document.createElement('span');
+      num.className = 'levels-num';
+      num.textContent = String(i + 1);
+      li.appendChild(num);
+      li.appendChild(document.createTextNode(String(text).replace(/^\s*[1-4]\s*[：:．.]?\s*/, '')));
+      list.appendChild(li);
+    });
+    box.hidden = false;
+  }
 
   /** R（項目との関連）の行を、AIの判定で置き換える */
   function setRelevance(text) {

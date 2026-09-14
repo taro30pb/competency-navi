@@ -90,13 +90,22 @@ function buildPrompt(input) {
     '2. 「毎週」「毎月」などの頻度と、「〜までに」の期限の両方がある',
     '3. 曜日または具体的な日付が入っている',
     '',
+    '# 評点基準（1〜4）の作り方',
+    'この会社のコンピテンシー評価は4点満点。上長が迷わず点を付けられるよう、',
+    '数えられる指標を1つ決めて、1から4の境目を数字で示すこと。',
+    '  1 … 大きく届かない　2 … 一部届かない　3 … 期待どおり　4 … 期待を上回る',
+    '指標は改善案の中に出てくる行動から選び、「何を分母に、何を分子に数えるか」が分かる形にする。',
+    '例：指標「月4件の改善提案のうち実施に至った件数」／1：0件　2：1件　3：2〜3件　4：4件以上',
+    '',
     '# 出力',
     '次のJSONだけを返してください。前置きや説明文は不要です。',
     '{',
     '  "points": ["原案のどこが曖昧で、なぜ上司が判定しづらいのかを2〜4点。各60字程度"],',
     '  "improved": "すべての条件を満たした、ひと続きの行動宣言文",',
     '  "evidence": "期末に達成したと判断するための証拠（提出物・レビュー履歴など）を1文で",',
-    '  "relevance": "選んだコンピテンシー項目に効く行動になっているか。ずれていればその理由を1〜2文で"',
+    '  "relevance": "選んだコンピテンシー項目に効く行動になっているか。ずれていればその理由を1〜2文で",',
+    '  "indicator": "評点を付けるときに数える指標を1つ。20字程度",',
+    '  "levels": ["1の基準", "2の基準", "3の基準", "4の基準"]',
     '}',
   ].join('\n');
 }
@@ -155,6 +164,8 @@ function askGemini(key, input, model) {
       improved: String(parsed.improved).trim(),
       evidence: parsed.evidence ? String(parsed.evidence).trim() : '',
       relevance: parsed.relevance ? String(parsed.relevance).trim() : '',
+      indicator: parsed.indicator ? String(parsed.indicator).trim() : '',
+      levels: Array.isArray(parsed.levels) ? parsed.levels.map(function (v) { return String(v).trim(); }) : [],
     };
   });
 }

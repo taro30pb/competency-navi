@@ -833,3 +833,41 @@ textarea { resize: vertical; min-height: 132px; }
 }
 
 .comment-ai { border-left-style: dashed; }
+
+/* AIが示す評点の付け方（1〜4） */
+.levels {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.levels-head {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.levels-head span { font-weight: 400; color: var(--ink-light); }
+
+.levels-list { list-style: none; margin: 0; padding: 0; }
+
+.levels-list li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.levels-num {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--ink-light);
+}
