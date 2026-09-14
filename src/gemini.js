@@ -7,8 +7,14 @@
  * 指示文の考え方は docs/gemini-prompt.md を参照。
  */
 
-/** 使うモデル。速さと料金の兼ね合いで Flash 系を既定にする */
-const GEMINI_MODEL = 'gemini-2.5-flash';
+/**
+ * 使うモデル。速さと料金の兼ね合いで Flash 系を既定にする。
+ *
+ * Google側でモデルが入れ替わると「このモデルは使えません。models/○○ を使ってください」
+ * というエラーが返る。そのときは案内されたモデル名で1度だけ自動的にやり直すので、
+ * ここを書き換えなくても動き続ける。
+ */
+const GEMINI_MODEL = 'gemini-3.6-flash';
 
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
@@ -58,7 +64,7 @@ function buildPrompt(input) {
  * Gemini に問い合わせる。
  * 成功すると { points, improved, evidence, relevance } を返す。
  */
-function askGemini(key, input) {
+function askGemini(key, input, model) {
   const body = {
     contents: [{ parts: [{ text: buildPrompt(input) }] }],
     generationConfig: {
@@ -67,7 +73,9 @@ function askGemini(key, input) {
     },
   };
 
-  return fetch(GEMINI_ENDPOINT + GEMINI_MODEL + ':generateContent?key=' + encodeURIComponent(key), {
+  const using = model || GEMINI_MODEL;
+
+  return fetch(GEMINI_ENDPOINT + using + ':generateContent?key=' + encodeURIComponent(key), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -75,7 +83,11 @@ function askGemini(key, input) {
     return res.json().then(function (data) {
       if (!res.ok) {
         const message = (data && data.error && data.error.message) || ('HTTP ' + res.status);
-        throw new Error(message);
+        const error = new Error(message);
+        // 「models/○○ を使ってください」と案内された場合は、そのモデル名を覚えておく
+        const suggested = message.match(/use\s+models\/([A-Za-z0-9.\-]+)/);
+        if (suggested) error.suggestedModel = suggested[1];
+        throw error;
       }
       return data;
     });
@@ -97,6 +109,7 @@ function askGemini(key, input) {
 
     if (!parsed.improved) throw new Error('AIから改善案が返りませんでした。');
     return {
+      model: using,
       points: Array.isArray(parsed.points) ? parsed.points : [],
       improved: String(parsed.improved).trim(),
       evidence: parsed.evidence ? String(parsed.evidence).trim() : '',
@@ -105,6 +118,21 @@ function askGemini(key, input) {
   });
 }
 
+/**
+ * 問い合わせる。モデルが入れ替わっていた場合は、案内されたモデルで1度だけやり直す。
+ */
+function requestImprovement(key, input) {
+  return askGemini(key, input).catch(function (error) {
+    if (!error.suggestedModel) throw error;
+    return askGemini(key, input, error.suggestedModel);
+  });
+}
+
 if (typeof module !== 'undefined') {
-  module.exports = { askGemini: askGemini, buildPrompt: buildPrompt, GEMINI_MODEL: GEMINI_MODEL };
+  module.exports = {
+    askGemini: askGemini,
+    requestImprovement: requestImprovement,
+    buildPrompt: buildPrompt,
+    GEMINI_MODEL: GEMINI_MODEL,
+  };
 }

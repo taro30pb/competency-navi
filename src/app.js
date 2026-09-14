@@ -354,7 +354,7 @@
     el('improve-error').hidden = true;
 
     const mbo = readMbo();
-    askGemini(storedKey(), {
+    requestImprovement(storedKey(), {
       draft: draft,
       role: mbo.role,
       competency: mbo.competency,
