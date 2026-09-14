@@ -194,8 +194,14 @@
    * byAi を true にすると見出しと注記がAI向けの文面に変わる。
    * 点数の出し方（scoreDraft を通す）は本人が書いた文章とまったく同じ。
    */
-  function renderImprovement(text, mbo, byAi) {
+  function renderImprovement(text, mbo, byAi, evidence) {
     el('improve-text').textContent = text;
+    if (evidence) {
+      el('improve-evidence').textContent = '達成基準：' + evidence;
+      el('improve-evidence').hidden = false;
+    } else {
+      el('improve-evidence').hidden = true;
+    }
     el('improve-total').textContent = scoreDraft(text, mbo).total.toFixed(1);
     el('improve-label').textContent = byAi ? 'AIが書いた改善案' : 'この型に沿って書いた例';
     el('improve-source').textContent = byAi
@@ -297,6 +303,105 @@
     el('copy').textContent = '選択しました（Ctrl+C）';
     setTimeout(function () { el('copy').textContent = 'コピー'; }, 2400);
   }
+
+  // ---- AI連携 ---------------------------------------------------------
+
+  const KEY_STORE = 'competency-navi.gemini-key';
+
+  /** 保存してあるAPIキーを読む。ブラウザが保存を許していない場合は空を返す */
+  function storedKey() {
+    try {
+      return window.localStorage.getItem(KEY_STORE) || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function showKeyState() {
+    const has = storedKey() !== '';
+    el('key-state').textContent = has
+      ? 'このブラウザに保存されています。'
+      : '未設定です。改善案はAIなしの記入例を出します。';
+    el('improve').hidden = !has;
+    if (has) el('api-key').value = '';
+  }
+
+  el('save-key').addEventListener('click', function () {
+    const value = el('api-key').value.trim();
+    if (value === '') return;
+    try {
+      window.localStorage.setItem(KEY_STORE, value);
+    } catch (e) {
+      el('key-state').textContent = 'このブラウザでは保存できませんでした。';
+      return;
+    }
+    showKeyState();
+  });
+
+  el('clear-key').addEventListener('click', function () {
+    try { window.localStorage.removeItem(KEY_STORE); } catch (e) { /* 保存できない環境 */ }
+    el('api-key').value = '';
+    showKeyState();
+  });
+
+  el('improve').addEventListener('click', function () {
+    const draft = el('draft').value.trim();
+    if (draft === '') return;
+
+    const button = el('improve');
+    button.disabled = true;
+    button.textContent = 'AIが書いています…';
+    el('improve-error').hidden = true;
+
+    const mbo = readMbo();
+    askGemini(storedKey(), {
+      draft: draft,
+      role: mbo.role,
+      competency: mbo.competency,
+    }).then(function (result) {
+      renderImprovement(result.improved, mbo, true, result.evidence);
+      if (result.relevance) setRelevance(result.relevance);
+      if (result.points.length > 0) addAiPoints(result.points);
+    }).catch(function (error) {
+      el('improve-error').textContent = 'AIに問い合わせできませんでした：' + error.message;
+      el('improve-error').hidden = false;
+    }).then(function () {
+      button.disabled = false;
+      button.textContent = 'AIに改善案を書いてもらう';
+    });
+  });
+
+  /** R（項目との関連）の行を、AIの判定で置き換える */
+  function setRelevance(text) {
+    const rows = el('findings').getElementsByClassName('finding-check');
+    if (rows.length === 0) return;
+    const comments = rows[0].getElementsByClassName('finding-comments');
+    if (comments.length === 0) return;
+    comments[0].innerHTML = '';
+    const li = document.createElement('li');
+    li.textContent = text;
+    comments[0].appendChild(li);
+  }
+
+  /** AIが挙げた指摘を、ルールの指摘の後ろに足す */
+  function addAiPoints(points) {
+    const first = el('findings').getElementsByClassName('finding')[0];
+    if (!first) return;
+    let box = first.getElementsByClassName('finding-comments')[0];
+    if (!box) {
+      box = document.createElement('ul');
+      box.className = 'finding-comments';
+      first.appendChild(box);
+    }
+    points.forEach(function (text) {
+      const li = document.createElement('li');
+      li.className = 'comment-ai';
+      li.textContent = 'AI：' + text;
+      box.appendChild(li);
+    });
+  }
+
+  showKeyState();
 
   el('run').addEventListener('click', run);
   el('sample').addEventListener('click', fillSample);

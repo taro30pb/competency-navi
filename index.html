@@ -52,9 +52,29 @@
 
     <div class="actions">
       <button type="button" id="run" class="button button-primary">診断する</button>
+      <button type="button" id="improve" class="button" hidden>AIに改善案を書いてもらう</button>
       <button type="button" id="sample" class="button">サンプルを入れる</button>
       <button type="button" id="clear" class="button">消す</button>
     </div>
+    <details class="ai-setup" id="ai-setup">
+      <summary>AI連携の設定</summary>
+      <p class="note">
+        改善案の文章はAI（Google Gemini）が書きます。使うにはご自身のAPIキーが必要です。
+        キーはこのブラウザにだけ保存され、どこにも送られません。
+        取得は <span class="link-text">aistudio.google.com/apikey</span> から。
+      </p>
+      <div class="form-table">
+        <label class="field">
+          <span class="field-label">APIキー</span>
+          <span class="field-value"><input type="password" id="api-key" placeholder="AIza… で始まる文字列" autocomplete="off"></span>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="button" id="save-key" class="button">保存する</button>
+        <button type="button" id="clear-key" class="button">消す</button>
+        <span class="note" id="key-state"></span>
+      </div>
+    </details>
   </section>
 
   <section class="panel panel-result" aria-labelledby="result-heading">
@@ -92,15 +112,15 @@
             <button type="button" id="copy" class="button button-small">コピー</button>
           </p>
           <p class="improve-text" id="improve-text"></p>
+          <p class="improve-evidence" id="improve-evidence" hidden></p>
         </div>
+        <p class="note" id="improve-error" hidden></p>
 
         <details class="skeleton-box">
           <summary>書き方の型を見る</summary>
           <p class="skeleton" id="skeleton"></p>
           <p class="note">〈　〉の中を自分の仕事の言葉で埋めると、6つの観点がひととおりそろった形になります。</p>
         </details>
-      </div>
-    </div>
       </div>
     </div>
   </section>
@@ -113,6 +133,7 @@
 
 <script src="src/competencies.js"></script>
 <script src="data/assignments.local.js"></script>
+<script src="src/gemini.js"></script>
 <script src="src/scoring.js"></script>
 <script src="src/advice.js"></script>
 <script src="src/app.js"></script>

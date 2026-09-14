@@ -802,3 +802,34 @@ textarea { resize: vertical; min-height: 132px; }
   padding: 4px 12px;
   font-size: 12px;
 }
+
+/* AI連携の設定（APIキーの入力） */
+.ai-setup {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.ai-setup > summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--accent);
+  padding: 4px 0;
+}
+
+.ai-setup[open] > summary { margin-bottom: 10px; }
+
+.ai-setup .actions { align-items: center; }
+
+.link-text { color: var(--accent); }
+
+/* AIが書いた達成基準と、AIが足した指摘 */
+.improve-evidence {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  font-size: 12px;
+  color: var(--ink-light);
+}
+
+.comment-ai { border-left-style: dashed; }
