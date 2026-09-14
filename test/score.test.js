@@ -33,16 +33,16 @@ cases.forEach(function (c) {
   const gain = after.total - before.total;
 
   console.log('\n■ ' + c.name);
-  console.log('  初稿   ' + before.total.toFixed(1) + '/4  ' + judge(before.total).label
-    + '   ' + before.axes.map(function (a) { return a.smart + ':' + a.score; }).join(' '));
-  console.log('  改善版 ' + after.total.toFixed(1) + '/4  ' + judge(after.total).label
-    + '   ' + after.axes.map(function (a) { return a.smart + ':' + a.score; }).join(' '));
+  console.log('  初稿   ' + before.total.toFixed(1) + '/5  ' + judge(before.total).label
+    + '   ' + before.axes.map(function (a) { return a.smart + ':' + (a.score === null ? '—' : a.score); }).join(' '));
+  console.log('  改善版 ' + after.total.toFixed(1) + '/5  ' + judge(after.total).label
+    + '   ' + after.axes.map(function (a) { return a.smart + ':' + (a.score === null ? '—' : a.score); }).join(' '));
   console.log('  改善幅 +' + gain.toFixed(1));
 
-  if (before.axes.length !== 5) { console.log('  NG: 観点は5つのはず'); failed++; }
-  if (before.total > 2.4) { console.log('  NG: 初稿が高すぎる（弱い目標を見抜けていない）'); failed++; }
-  if (after.total < 3.5) { console.log('  NG: 改善版が十分な水準に届いていない'); failed++; }
-  if (gain < 1.5) { console.log('  NG: 改善幅が小さすぎる'); failed++; }
+  if (before.axes.length !== 6) { console.log('  NG: 観点はRを含めて6つのはず'); failed++; }
+  if (before.total > 2.5) { console.log('  NG: 初稿が高すぎる（弱い目標を見抜けていない）'); failed++; }
+  if (after.total < 4.0) { console.log('  NG: 改善版が十分な水準に届いていない'); failed++; }
+  if (gain < 2.0) { console.log('  NG: 改善幅が小さすぎる'); failed++; }
 });
 
 console.log('\n' + (failed === 0 ? 'すべて期待どおり' : failed + ' 件が期待とずれています'));

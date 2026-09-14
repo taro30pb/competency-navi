@@ -757,3 +757,69 @@ textarea { resize: vertical; min-height: 132px; }
 }
 
 .note-legend { margin: calc(var(--s-1) * -1) 0 var(--s-3); }
+
+/* --------------------------------------------------------------------------
+   観点別の指摘（観点と指摘を1つの表にまとめたもの）
+   -------------------------------------------------------------------------- */
+
+.findings { list-style: none; margin: 0; padding: 0; }
+
+.finding {
+  border: 1px solid var(--line);
+  border-top: none;
+  padding: 14px 16px;
+}
+
+.finding:first-child { border-top: 1px solid var(--line); }
+
+.finding-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.finding-head .axis-name { font-weight: 600; }
+
+.finding-head .axis-meter { margin-left: auto; }
+
+.finding-head .axis-score { min-width: 34px; text-align: right; }
+.finding-head .axis-score small { color: var(--ink-light); font-size: 11px; }
+
+.axis-check {
+  margin-left: auto;
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font-size: 12px;
+  color: var(--ink-light);
+}
+
+.finding .axis-hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--ink-light);
+}
+
+.finding-comments {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.finding-comments li {
+  padding: 10px 12px;
+  margin-top: 6px;
+  background: var(--accent-weak);
+  border-left: 3px solid var(--accent-line, var(--accent));
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.finding-weak .finding-comments li { background: #fdf6ea; border-left-color: #c08a2e; }
+
+.finding-ok { margin: 8px 0 0; font-size: 12px; color: var(--accent); }
+
+@media (max-width: 520px) {
+  .finding-head { flex-wrap: wrap; }
+  .finding-head .axis-meter { margin-left: 0; }
+}

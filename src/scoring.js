@@ -116,8 +116,7 @@ function scoreDraft(draft, mbo) {
   const dependents = findWords(text, DEPENDENT_WORDS);
   const quantities = findQuantities(text);
 
-  // 観点ごとに3つの条件を見て、満たした数＋1を点数とする（1〜4点）。
-  // 社のコンピテンシー評価が4点満点なので、それに合わせている。
+  // 観点ごとに4つの条件を見て、満たした数＋1を点数とする（1〜5点）。
   const axes = [];
   function axis(key, label, smart, hint, conditions) {
     let met = 0;
@@ -130,6 +129,7 @@ function scoreDraft(draft, mbo) {
     /担当|自分|私|チーム|部署|店舗|現場|顧客|お客様|施主|案件|物件|会員|生徒|利用者/.test(text),
     /(時|際|場合|後|前|当日|受けた|きたら|あったら)/.test(text),
     vague.length === 0,
+    quantities.length >= 1,          // 対象の規模が数で示されている
   ]);
 
   // ② 定量性（M 測れる）
@@ -137,21 +137,31 @@ function scoreDraft(draft, mbo) {
     quantities.length >= 1,
     quantities.length >= 2,
     quantities.length >= 3,
+    /(以上|以内|まで|率|達成)/.test(text),   // どこまでやれば達成かが書かれている
   ]);
 
   // ③ 手段（A 達成できる）
   axis('method', '手段', 'A', '結果ではなく、自分が動かせる行動で書かれているか', [
     actions.length >= 1,
-    actions.length >= 2 || systems.length >= 1,
+    actions.length >= 2,
     // 他人任せでなく、成果の言いっぱなしでもない
     dependents.length === 0 && !(outcomes.length > 0 && actions.length === 0),
+    actions.length >= 3 || systems.length >= 1,   // 手順や仕組みとして残る形になっている
   ]);
+
+  // R（項目に効くか）は点数にしない。言葉の一致では測れないため、確認として並べる。
+  // 画面では点数の代わりに「要確認」と出す。判定はAIにつないだ後に行う。
+  axes.push({
+    key: 'relevance', label: '項目との関連', smart: 'R', score: null,
+    hint: '選んだコンピテンシー項目に効く行動になっているか',
+  });
 
   // ④ 期限・頻度（T 期限がある）
   axis('timing', '期限・頻度', 'T', 'いつまでに・どのくらいの頻度で、が決まっているか', [
     frequencies.length + deadlines.length >= 1,
     frequencies.length >= 1 && deadlines.length >= 1,
     frequencies.length + deadlines.length >= 3,
+    /(月曜|火曜|水曜|木曜|金曜|土曜|日曜|月末|週末|\d+日|\d+時)/.test(toHalfWidth(text)),  // 日や曜日まで決まっている
   ]);
 
   // ⑤ 報告・振返り（＋ 見直す）
@@ -159,17 +169,19 @@ function scoreDraft(draft, mbo) {
     reports.length >= 1,
     reviews.length >= 1,
     reports.length >= 1 && (frequencies.length >= 1 || deadlines.length >= 1),
+    /(所長|店長|上長|上司|課長|部長|朝礼|会議|ミーティング|定例)/.test(text),   // 報告先や場が決まっている
   ]);
 
-  // 最終点は5観点の平均。小数第1位まで出す（例 3.2／4）
+  // 最終点は、点数のある5観点の平均。小数第1位まで出す（例 3.2／5）
+  const scored = axes.filter(function (a) { return a.score !== null; });
   let sum = 0;
-  axes.forEach(function (a) { sum += a.score; });
-  const total = Math.round((sum / axes.length) * 10) / 10;
+  scored.forEach(function (a) { sum += a.score; });
+  const total = Math.round((sum / scored.length) * 10) / 10;
 
   return {
     text: text,
     total: total,
-    max: 4,
+    max: 5,
     axes: axes,
     detected: {
       vague: vague, actions: actions, systems: systems, deadlines: deadlines,
@@ -183,11 +195,11 @@ function scoreDraft(draft, mbo) {
 function judge(total) {
   // 点数は人事評価ではなく、書き方の目安。否定的な言い方は使わない。
   const note = '　※この点数は評価ではなく、書き方の目安です。';
-  if (total >= 3.5) {
+  if (total >= 4.0) {
     return { level: 'pass', label: '十分に書けています',
       note: '期末に自分の成果を説明しやすい形になっています。' + note };
   }
-  if (total >= 2.5) {
+  if (total >= 3.0) {
     return { level: 'near', label: 'あと少し',
       note: '骨格はできています。弱い観点を1つ2つ足すと、さらに伝わる形になります。' + note };
   }

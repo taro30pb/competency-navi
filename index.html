@@ -14,7 +14,7 @@
 <header class="header">
   <div class="header-inner">
     <h1>コンピテンシー目標ナビ</h1>
-    <p class="lead">自分で書いた行動目標を貼ると、上長が判定できる水準になっているかを5つの観点で診断します。</p>
+    <p class="lead">自分で書いた行動目標を貼ると、上長が判定できる水準になっているかを6つの観点で診断します。</p>
   </div>
 </header>
 
@@ -67,7 +67,7 @@
     <div id="result" class="result" hidden>
       <div class="verdict">
         <div class="score">
-          <span id="score-total">0</span><span class="score-max">/4</span>
+          <span id="score-total">0</span><span class="score-max">/5</span>
         </div>
         <div class="verdict-text">
           <span id="verdict-label" class="badge">—</span>
@@ -76,20 +76,15 @@
       </div>
 
       <div class="block block-comments">
-        <h3>上長から見た指摘</h3>
-        <ul id="comments" class="comments"></ul>
+        <h3>観点別の指摘</h3>
+        <p class="note note-legend">SMARTの法則（S 具体的／M 測れる／A 達成できる／R 項目に効く／T 期限がある）と、それを保つ仕組み（＋ 見直す）の6つで見ています。各観点5点満点。Rは点数にせず確認だけ行います。</p>
+        <ul id="findings" class="findings"></ul>
       </div>
 
       <div class="block block-skeleton">
         <h3>書き直しの型</h3>
         <p class="skeleton" id="skeleton"></p>
-        <p class="note">〈　〉の中を自分の仕事の言葉で埋めると、5つの観点がひととおりそろった形になります。</p>
-      </div>
-
-      <div class="block block-axes">
-        <h3>観点別</h3>
-      <p class="note note-legend">SMARTの法則（S 具体的／M 測れる／A 達成できる／T 期限がある）と、それを保つ仕組み（＋ 見直す）で見ています。R（選んだ項目に効くか）は点数にせず、指摘の中で確認します。</p>
-        <ul id="axes" class="axes"></ul>
+        <p class="note">〈　〉の中を自分の仕事の言葉で埋めると、6つの観点がひととおりそろった形になります。</p>
       </div>
     </div>
   </section>

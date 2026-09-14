@@ -30,11 +30,13 @@ const cases = [
     },
   },
   {
-    name: '観点はS→M→A→T→＋の5つ（Rは点数にしない）',
+    name: '観点はS→M→A→R→T→＋の6つ（Rは点数にしない）',
     draft: '毎週金曜に担当5件を点検して所長に報告する。',
     expect: function (r, adv) {
-      return r.axes.length === 5
-        && adv.smart.map(function (x) { return x.letter; }).join('') === 'SMAT＋';
+      const relevance = r.axes.filter(function (a) { return a.smart === 'R'; })[0];
+      return r.axes.length === 6
+        && relevance.score === null
+        && adv.smart.map(function (x) { return x.letter; }).join('') === 'SMART＋';
     },
   },
   {

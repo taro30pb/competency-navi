@@ -55,32 +55,35 @@ function touchesCompetency(text, competency) {
 const ROOT_CAUSES = [
   {
     key: 'feeling',
+    axis: 'specificity',
     test: function (r) {
       return r.detected.vague.length > 0;
     },
     message: function (r) {
       const words = r.detected.vague.slice(0, 3).map(displayWord).join('」「');
-      return '［S 具体的］「' + words + '」は気持ちを表す言葉なので、やったかどうかを後から確かめられません。'
+      return '「' + words + '」は気持ちを表す言葉なので、やったかどうかを後から確かめられません。'
         + '目に見える動きに言い換えると、期末に自分の成果として説明しやすくなります。';
     },
   },
   {
     key: 'outcome',
+    axis: 'method',
     test: function (r) {
       return r.detected.outcomes.length > 0 && r.detected.actions.length === 0;
     },
     message: function () {
-      return '［A 達成できる］書かれているのは成果で、そこに至る行動がまだ見えません。'
+      return '書かれているのは成果で、そこに至る行動がまだ見えません。'
         + 'その成果を生む動きを1つ2つ挙げて、件数で数えられる形にすると強くなります。';
     },
   },
   {
     key: 'dependent',
+    axis: 'method',
     test: function (r) {
       return r.detected.dependents.length > 0;
     },
     message: function (r) {
-      return '［A 達成できる］「' + r.detected.dependents[0] + '」のように、他の人が動くことを前提にした書き方が入っています。'
+      return '「' + r.detected.dependents[0] + '」のように、他の人が動くことを前提にした書き方が入っています。'
         + 'SMARTのA（達成できる）は、自分の判断で動かせることが条件です。'
         + '相手が動かなかった場合でも自分で進められる行動を1つ足しておくと安心です。';
     },
@@ -89,11 +92,11 @@ const ROOT_CAUSES = [
 
 /** 観点ごとの指摘文。点数が低いときに出す */
 const AXIS_ADVICE = {
-  specificity: '［S 具体的］誰の何を対象にするのかが読み取れません。担当する人数・件数・範囲を一言添えると、ぐっと伝わります。',
-  quantity: '［M 測れる］数字が入っていないため、やったかどうかを後から数えにくくなります。件数・人数・％のいずれかを入れておくと、期末の説明が楽になります。',
-  method: '［A 達成できる］何をするのかが動作になっていません。「提案する」「一覧化する」「同行する」のように、自分が動かせる行動の形にすると進めやすくなります。',
-  timing: '［T 期限がある］いつやるのかが決まっていません。「毎週金曜に」「月末までに」のように、頻度か期限のどちらかがあると、後回しになりにくくなります。',
-  followup: '［＋ 見直す］進み具合を誰にどう報告するか、遅れたときにどう立て直すかがありません。報告の場と、遅れたときの手当てを書き添えておくと、途中で止まりません。',
+  specificity: '誰の何を対象にするのかが読み取れません。担当する人数・件数・範囲を一言添えると、ぐっと伝わります。',
+  quantity: '数字が入っていないため、やったかどうかを後から数えにくくなります。件数・人数・％のいずれかを入れておくと、期末の説明が楽になります。',
+  method: '何をするのかが動作になっていません。「提案する」「一覧化する」「同行する」のように、自分が動かせる行動の形にすると進めやすくなります。',
+  timing: 'いつやるのかが決まっていません。「毎週金曜に」「月末までに」のように、頻度か期限のどちらかがあると、後回しになりにくくなります。',
+  followup: '進み具合を誰にどう報告するか、遅れたときにどう立て直すかがありません。報告の場と、遅れたときの手当てを書き添えておくと、途中で止まりません。',
 };
 
 /** 褒める材料。強い観点があれば1つだけ返す */
@@ -112,53 +115,64 @@ const AXIS_PRAISE = {
  */
 function buildAdvice(result, mbo) {
   mbo = mbo || {};
-  const comments = [];
 
+  // 観点ごとに指摘をまとめる。画面では観点と指摘を1つの表として見せる。
+  const byAxis = {};
+  result.axes.forEach(function (a) { byAxis[a.key] = []; });
+
+  // 典型的な原因の指摘を、該当する観点に入れる
   ROOT_CAUSES.forEach(function (cause) {
-    if (cause.test(result, mbo)) comments.push(cause.message(result, mbo));
+    if (cause.test(result, mbo)) {
+      const target = byAxis[cause.axis] ? cause.axis : 'specificity';
+      byAxis[target].push(cause.message(result, mbo));
+    }
   });
 
-  const weakAxes = result.axes
-    .filter(function (a) { return a.score <= 2; })
-    .sort(function (a, b) { return a.score - b.score; });
-
-  weakAxes.forEach(function (axis) {
-    const text = AXIS_ADVICE[axis.key];
-    if (text && comments.indexOf(text) === -1) comments.push(text);
+  // 点数の低い観点には、その観点の指摘を足す
+  result.axes.forEach(function (axis) {
+    if (axis.score !== null && axis.score <= 3 && AXIS_ADVICE[axis.key]) {
+      byAxis[axis.key].push(AXIS_ADVICE[axis.key]);
+    }
   });
 
-  const strongAxes = result.axes.filter(function (a) { return a.score >= 4; });
-  const praise = strongAxes.length > 0 ? AXIS_PRAISE[strongAxes[0].key] : null;
+  // R（項目との関連）は点数にできないので、選んでいれば必ず確認を出す
+  if (mbo.competency) {
+    byAxis.relevance.push('この行動は「' + mbo.competency.name + '（' + mbo.competency.definition
+      + '）」に効きますか。上長はこの項目で見るので、ずれを感じたら'
+      + '項目の言葉に寄せておくと伝わりやすくなります。');
+  } else {
+    byAxis.relevance.push('取り組む項目を選ぶと、その項目に効く行動になっているかを確認できます。');
+  }
 
-  // SMARTのどの文字が満たせていて、どれが足りないか（S→M→A→R→T→＋の順に並べる）
-  const SMART_ORDER = ['S', 'M', 'A', 'R', 'T', '＋'];
-  const smart = result.axes.slice().sort(function (x, y) {
-    return SMART_ORDER.indexOf(x.smart) - SMART_ORDER.indexOf(y.smart);
-  }).map(function (axis) {
+  const axes = result.axes.map(function (axis) {
     const meaning = SMART_MEANING[axis.smart] || {};
     return {
-      letter: axis.smart,
-      label: meaning.label || axis.label,
-      note: meaning.note || axis.hint,
-      met: axis.score >= 3,
+      key: axis.key,
+      label: axis.label,
+      smart: axis.smart,
+      smartLabel: meaning.label || '',
+      score: axis.score,
+      hint: axis.hint,
+      comments: byAxis[axis.key],
+      met: axis.score !== null && axis.score >= 4,
     };
   });
 
-  const list = comments.slice(0, 5);
+  // 良く書けている観点を1つだけ褒める
+  const strong = axes.filter(function (a) { return a.met; });
+  const praise = strong.length > 0 ? AXIS_PRAISE[strong[0].key] : null;
 
-  // 選んだ項目に効く行動かどうかは、言葉の一致では判定できない（「変化」と「変わる場面」は
-  // 同じことを言っているが文字は違う）。決めつけずに、本人に確認してもらう。
-  if (mbo.competency) {
-    list.push('［R 指標とつながる］この行動は「' + mbo.competency.name + '（' + mbo.competency.definition
-      + '）」に効きますか。上長はこの項目で見るので、ずれを感じたら'
-      + '項目の言葉に寄せておくと伝わりやすくなります。');
-  }
+  // 平たい一覧（テストや、まとめて読みたいとき用）
+  const comments = [];
+  axes.forEach(function (a) { a.comments.forEach(function (c) { comments.push(c); }); });
 
   return {
-    comments: list,
+    axes: axes,
+    comments: comments,
     praise: praise,
-    weakAxes: weakAxes,
-    smart: smart,
+    smart: axes.map(function (a) {
+      return { letter: a.smart, label: a.smartLabel, note: a.hint, met: a.met };
+    }),
   };
 }
 

@@ -102,94 +102,87 @@
     box.hidden = false;
   }
 
-  function renderAxes(axes) {
-    const list = el('axes');
+  /**
+   * 観点と指摘を1つの表としてまとめて描く。
+   * 観点ごとに「点数」と「その観点の指摘」が並ぶ。
+   */
+  function renderFindings(advice) {
+    const list = el('findings');
     list.innerHTML = '';
-    axes.forEach(function (axis) {
-      const li = document.createElement('li');
-      li.className = 'axis' + (axis.score <= 2 ? ' axis-weak' : axis.score >= 4 ? ' axis-strong' : '');
 
-      const name = document.createElement('span');
-      name.className = 'axis-name';
+    advice.axes.forEach(function (axis) {
+      const li = document.createElement('li');
+      li.className = 'finding'
+        + (axis.score === null ? ' finding-check' : axis.score <= 2 ? ' finding-weak' : axis.met ? ' finding-strong' : '');
+
+      const head = document.createElement('div');
+      head.className = 'finding-head';
+
       const letter = document.createElement('span');
       letter.className = 'axis-letter';
       letter.textContent = axis.smart;
-      name.appendChild(letter);
-      name.appendChild(document.createTextNode(axis.label));
 
-      const meter = document.createElement('span');
-      meter.className = 'axis-meter';
-      meter.setAttribute('role', 'img');
-      meter.setAttribute('aria-label', axis.score + '点／4点');
-      for (let i = 1; i <= 4; i++) {
-        const dot = document.createElement('span');
-        dot.className = 'dot' + (i <= axis.score ? ' dot-on' : '');
-        meter.appendChild(dot);
+      const name = document.createElement('span');
+      name.className = 'axis-name';
+      name.textContent = axis.label;
+
+      head.appendChild(letter);
+      head.appendChild(name);
+
+      if (axis.score === null) {
+        const check = document.createElement('span');
+        check.className = 'axis-check';
+        check.textContent = '要確認';
+        head.appendChild(check);
+      } else {
+        const meter = document.createElement('span');
+        meter.className = 'axis-meter';
+        meter.setAttribute('role', 'img');
+        meter.setAttribute('aria-label', axis.score + '点／5点');
+        for (let i = 1; i <= 5; i++) {
+          const dot = document.createElement('span');
+          dot.className = 'dot' + (i <= axis.score ? ' dot-on' : '');
+          meter.appendChild(dot);
+        }
+        const value = document.createElement('span');
+        value.className = 'axis-score';
+        value.textContent = axis.score;
+        const max = document.createElement('small');
+        max.textContent = '/5';
+        value.appendChild(max);
+
+        head.appendChild(meter);
+        head.appendChild(value);
       }
 
-      const value = document.createElement('span');
-      value.className = 'axis-score';
-      value.textContent = axis.score;
-
-      const hint = document.createElement('span');
+      const hint = document.createElement('p');
       hint.className = 'axis-hint';
       hint.textContent = axis.hint;
 
-      li.appendChild(name);
-      li.appendChild(meter);
-      li.appendChild(value);
+      li.appendChild(head);
       li.appendChild(hint);
+
+      if (axis.comments.length > 0) {
+        const ul = document.createElement('ul');
+        ul.className = 'finding-comments';
+        axis.comments.forEach(function (text) {
+          const c = document.createElement('li');
+          c.textContent = text;
+          ul.appendChild(c);
+        });
+        li.appendChild(ul);
+      } else if (axis.score !== null) {
+        const ok = document.createElement('p');
+        ok.className = 'finding-ok';
+        ok.textContent = '✓ この観点は書けています。';
+        li.appendChild(ok);
+      }
+
       list.appendChild(li);
     });
   }
 
-  /**
-   * 指摘文の見せ方だけを整える（文面そのものは advice.js のまま）。
-   * 先頭の［S 具体的］のような印は、本文と切り離して小さく添える。
-   */
-  function fillComment(li, text) {
-    const head = /^［([^］]*)］/.exec(text);
-    if (!head) {
-      li.textContent = text;
-      return;
-    }
-    const tag = document.createElement('span');
-    tag.className = 'comment-tag';
-    tag.textContent = head[1];
-    li.appendChild(tag);
-    li.appendChild(document.createTextNode(text.slice(head[0].length)));
-  }
-
-  function renderComments(advice) {
-    const list = el('comments');
-    list.innerHTML = '';
-
-    if (advice.praise) {
-      const li = document.createElement('li');
-      li.className = 'comment comment-praise';
-      fillComment(li, advice.praise);
-      list.appendChild(li);
-    }
-
-    advice.comments.forEach(function (text) {
-      const li = document.createElement('li');
-      li.className = 'comment';
-      fillComment(li, text);
-      list.appendChild(li);
-    });
-
-    if (advice.comments.length === 0) {
-      const li = document.createElement('li');
-      li.className = 'comment comment-praise';
-      li.textContent = '指摘はありません。このまま提出できます。';
-      list.appendChild(li);
-    }
-  }
-
-  /**
-   * 書き直しの型。〈　〉は自分で埋める枠なので、枠として見えるようにする。
-   * 文面は advice.js の buildSkeleton() のまま。
-   */
+  /** 書き直しの型。〈　〉は自分で埋める枠なので、枠として見えるようにする。 */
   function renderSkeleton(text) {
     const box = el('skeleton');
     box.textContent = '';
@@ -226,8 +219,7 @@
     el('verdict-label').className = 'badge badge-' + verdict.level;
     el('verdict-note').textContent = verdict.note;
 
-    renderAxes(result.axes);
-    renderComments(advice);
+    renderFindings(advice);
     renderSkeleton(buildSkeleton(result, mbo));
 
     el('empty').hidden = true;
