@@ -47,8 +47,11 @@ const DEADLINE_WORDS = ['までに', '以内', '当日', '翌日', '翌週', '�
 /** 頻度を表す言葉 */
 const FREQUENCY_WORDS = ['毎日', '毎週', '毎月', '週次', '月次', '日次', '四半期', '毎回', '隔週'];
 
-/** 報告先・報告行為を表す言葉 */
-const REPORT_WORDS = ['報告', '共有', '提出', '朝礼', 'ミーティング', '会議', '上長', '所長', '店長', '上司', '定例'];
+/** 報告する「行為」を表す言葉 */
+const REPORT_WORDS = ['報告', '共有', '提出', '連絡'];
+
+/** 報告する「相手」や「場」を表す言葉。REPORT_WORDS とは重ねない */
+const REPORT_TARGETS = ['上長', '上司', '所長', '店長', '課長', '部長', '本部長', '朝礼', 'ミーティング', '会議', '定例', '面談'];
 
 /** 振り返り・立て直しを表す言葉 */
 const REVIEW_WORDS = ['振り返', 'ふり返', '見直', 'レビュー', '改善', '修正', 'リカバリ', '調整', '検証', '再発防止', '対策'];
@@ -111,6 +114,7 @@ function scoreDraft(draft, mbo) {
   const deadlines = findWords(text, DEADLINE_WORDS);
   const frequencies = findWords(text, FREQUENCY_WORDS);
   const reports = findWords(text, REPORT_WORDS);
+  const reportTargets = findWords(text, REPORT_TARGETS);
   const reviews = findWords(text, REVIEW_WORDS);
   const outcomes = findWords(text, OUTCOME_WORDS);
   const dependents = findWords(text, DEPENDENT_WORDS);
@@ -118,16 +122,17 @@ function scoreDraft(draft, mbo) {
 
   // 観点ごとに4つの条件を見て、満たした数＋1を点数とする（1〜5点）。
   const axes = [];
-  function axis(key, label, smart, hint, conditions) {
+  function axis(key, label, smart, hint, conditions, penalty) {
     let met = 0;
     conditions.forEach(function (c) { if (c) met += 1; });
-    axes.push({ key: key, label: label, smart: smart, score: 1 + met, hint: hint });
+    const score = Math.max(1, Math.min(5, 1 + met - (penalty || 0)));
+    axes.push({ key: key, label: label, smart: smart, score: score, hint: hint });
   }
 
   // ① 具体性（S 具体的）
   axis('specificity', '具体性', 'S', '誰の・何を・どの場面で、が読んで分かるか', [
     /担当|自分|私|チーム|部署|店舗|現場|顧客|お客様|施主|案件|物件|会員|生徒|利用者/.test(text),
-    /(時|際|場合|後|前|当日|受けた|きたら|あったら)/.test(text),
+    /(の(時|際|とき)|場合|してから|を受け|があったら|が出たら|次第|タイミング|に合わせて|当日|翌日)/.test(text),
     vague.length === 0,
     quantities.length >= 1,          // 対象の規模が数で示されている
   ]);
@@ -137,17 +142,18 @@ function scoreDraft(draft, mbo) {
     quantities.length >= 1,
     quantities.length >= 2,
     quantities.length >= 3,
-    /(以上|以内|まで|率|達成)/.test(text),   // どこまでやれば達成かが書かれている
+    /\d+[^。、]{0,8}(以上|以内|未満|超)/.test(toHalfWidth(text)) || /達成率/.test(text),   // 数字で達成ラインが引かれている
   ]);
 
   // ③ 手段（A 達成できる）
   axis('method', '手段', 'A', '結果ではなく、自分が動かせる行動で書かれているか', [
     actions.length >= 1,
     actions.length >= 2,
-    // 他人任せでなく、成果の言いっぱなしでもない
-    dependents.length === 0 && !(outcomes.length > 0 && actions.length === 0),
-    actions.length >= 3 || systems.length >= 1,   // 手順や仕組みとして残る形になっている
-  ]);
+    actions.length >= 3,
+    systems.length >= 1,   // 手順や仕組みとして残る形になっている
+  ],
+    // 他人任せ、または成果だけで行動が無い場合は引く
+    (dependents.length > 0 || (outcomes.length > 0 && actions.length === 0)) ? 1 : 0);
 
   // R（項目に効くか）は点数にしない。言葉の一致では測れないため、確認として並べる。
   // 画面では点数の代わりに「要確認」と出す。判定はAIにつないだ後に行う。
@@ -161,7 +167,7 @@ function scoreDraft(draft, mbo) {
     frequencies.length + deadlines.length >= 1,
     frequencies.length >= 1 && deadlines.length >= 1,
     frequencies.length + deadlines.length >= 3,
-    /(月曜|火曜|水曜|木曜|金曜|土曜|日曜|月末|週末|\d+日|\d+時)/.test(toHalfWidth(text)),  // 日や曜日まで決まっている
+    /([月火水木金土日]曜|月末|週末|期末|\d+日までに|毎月\d+日|\d+日(まで|時点))/.test(toHalfWidth(text)),  // 曜日や日付まで決まっている
   ]);
 
   // ⑤ 報告・振返り（＋ 見直す）
@@ -169,7 +175,7 @@ function scoreDraft(draft, mbo) {
     reports.length >= 1,
     reviews.length >= 1,
     reports.length >= 1 && (frequencies.length >= 1 || deadlines.length >= 1),
-    /(所長|店長|上長|上司|課長|部長|朝礼|会議|ミーティング|定例)/.test(text),   // 報告先や場が決まっている
+    reportTargets.length >= 1,   // 誰に・どの場で報告するかが決まっている
   ]);
 
   // 最終点は、点数のある5観点の平均。小数第1位まで出す（例 3.2／5）
@@ -186,7 +192,7 @@ function scoreDraft(draft, mbo) {
     detected: {
       vague: vague, actions: actions, systems: systems, deadlines: deadlines,
       frequencies: frequencies, reports: reports, reviews: reviews,
-      outcomes: outcomes, quantities: quantities, dependents: dependents,
+      outcomes: outcomes, quantities: quantities, dependents: dependents, reportTargets: reportTargets,
     },
   };
 }

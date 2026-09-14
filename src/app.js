@@ -222,6 +222,11 @@
     renderFindings(advice);
     renderSkeleton(buildSkeleton(result, mbo));
 
+    // 型に沿って書くと何点になるかを、実際に採点して見せる
+    const example = buildExample();
+    el('example-text').textContent = example;
+    el('example-total').textContent = scoreDraft(example, mbo).total.toFixed(1);
+
     el('empty').hidden = true;
     el('result').hidden = false;
   }

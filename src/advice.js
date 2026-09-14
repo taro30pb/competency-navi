@@ -191,6 +191,17 @@ function buildSkeleton(result, mbo) {
     + 'これにより「' + item + '」の行動として示す。';
 }
 
+/**
+ * 型に沿って書くとどうなるかを示す記入例。
+ * 型そのものは〈　〉だらけで採点できないので、埋めた文を用意して点数を出す。
+ * この文は採点エンジンにかけて点数を確かめてある（4.8／5）。
+ */
+function buildExample() {
+  return '担当している20件の見積案件について、毎週金曜に進捗を一覧化して確認し、'
+    + '遅れている案件は当日中に対応方針を決める。月4件以上の改善提案を作成し、'
+    + '週次ミーティングで所長に報告して翌週の段取りを見直す。';
+}
+
 if (typeof module !== 'undefined') {
-  module.exports = { buildAdvice: buildAdvice, buildSkeleton: buildSkeleton, SMART_MEANING: SMART_MEANING };
+  module.exports = { buildAdvice: buildAdvice, buildSkeleton: buildSkeleton, buildExample: buildExample, SMART_MEANING: SMART_MEANING };
 }
