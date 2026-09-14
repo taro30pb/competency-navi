@@ -435,90 +435,8 @@ textarea { resize: vertical; min-height: 132px; }
 
 .block { margin-top: var(--s-6); }
 
-/* 主役の「上長から見た指摘」は間を広く取って独立させる */
+/* 主役の「観点別の指摘」は間を広く取って独立させる */
 .block-comments { margin-top: var(--s-6); }
-
-/* ------------------------------------------------------ 上長から見た指摘 */
-
-.comments {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  counter-reset: comment;
-  border: 1px solid var(--line);
-  border-radius: var(--r-s);
-  overflow: hidden;
-}
-
-/* 1件＝表の1行。番号は左のセル風に置く */
-.comment {
-  position: relative;
-  padding: var(--s-3) var(--s-4) var(--s-3) 48px;
-  border-top: 1px solid var(--line);
-  border-left: 3px solid var(--warn-line);
-  background: #fff;
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-.comment:first-child { border-top: none; }
-
-.comment::before {
-  counter-increment: comment;
-  content: counter(comment);
-  position: absolute;
-  left: var(--s-3);
-  top: 14px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--warn-weak);
-  border: 1px solid var(--warn-line);
-  color: var(--warn);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 20px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ［S 具体的］のような印。本文から切り離して小さく添える */
-.comment-tag {
-  display: inline-block;
-  margin: 0 var(--s-2) 2px 0;
-  padding: 0 var(--s-2);
-  border-radius: var(--r-s);
-  background: var(--warn-weak);
-  border: 1px solid var(--warn-line);
-  color: var(--warn);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.7;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  vertical-align: 1px;
-}
-
-/* 良い点は青＋チェック。色だけに頼らずマークでも区別する */
-.comment-praise {
-  border-left-color: var(--accent-line);
-  background: var(--accent-weak);
-}
-
-.comment-praise::before {
-  counter-increment: none;
-  content: "✓";
-  background: #fff;
-  border-color: var(--accent);
-  color: var(--accent);
-  font-size: 13px;
-}
-
-.comment-praise .comment-tag {
-  background: #fff;
-  border-color: var(--accent-edge);
-  color: var(--accent);
-}
 
 /* ------------------------------------------------------------ 書き直しの型 */
 
@@ -551,90 +469,198 @@ textarea { resize: vertical; min-height: 132px; }
   color: var(--ink-mid);
 }
 
-/* ---------------------------------------------------------------- 観点別 */
+/* ------------------------------------------------------- 観点別の指摘（表）
 
-.block-axes { margin-top: var(--s-6); }
+   6つの観点を1行ずつ縦に並べた1つの表。1行の作りは全観点で共通で、
+   ［SMARTの記号］［観点名］…［メーター］［点数］
+     └ その観点で見ていること
+     └ 指摘（1件＝1枠） または「書けています」の一言
+   R（項目との関連）だけは点数が無く「要確認」が入るが、骨格は他の行と同じ。
+   -------------------------------------------------------------------------- */
 
-/* 観点別は表。ラベル列は薄グレー、点数は右寄せ */
-.axes {
+.note-legend { margin: calc(var(--s-1) * -1) 0 var(--s-3); }
+
+/* --indent ＝ 記号(24px)＋間(8px)。説明と指摘を観点名の位置にそろえる下げ幅 */
+.findings {
+  --indent: 32px;
   list-style: none;
   margin: 0;
   padding: 0;
   border: 1px solid var(--line);
   border-radius: var(--r-s);
+  background: var(--panel);
   overflow: hidden;
 }
 
-.axis {
-  display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) 48px;
-  grid-template-areas:
-    "name meter score"
-    "name hint  hint";
-  align-items: center;
+/* 1観点＝表の1行。行の余白は全観点で同じ */
+.finding {
+  padding: var(--s-4);
   border-top: 1px solid var(--line);
 }
 
-.axis:first-child { border-top: none; }
+.finding:first-child { border-top: none; }
 
-.axis-name {
-  grid-area: name;
-  align-self: stretch;
+/* 行の1段目。記号・観点名は左、メーターと点数は右端にそろえる */
+.finding-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 24px;
+}
+
+/* SMARTの記号。良い観点は塗り、それ以外は白地。色が見えなくても区別できるようにする */
+.axis-letter {
+  flex: none;
   display: flex;
   align-items: center;
-  padding: var(--s-3) var(--s-3);
-  background: var(--cell);
-  border-right: 1px solid var(--line);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* 観点別に添えるSMARTの文字 */
-.axis-letter {
-  display: inline-block;
-  min-width: 16px;
-  margin-right: var(--s-2);
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--accent-edge);
+  border-radius: var(--r-s);
+  background: #fff;
   color: var(--accent);
-  font-weight: 700;
   font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
 }
 
+.finding-weak .axis-letter { border-color: var(--warn-line); color: var(--warn); }
+.finding-strong .axis-letter { background: var(--accent); border-color: var(--accent); color: #fff; }
+.finding-check .axis-letter { border-color: var(--line); color: var(--ink-mid); }
+
+/* 観点名は行の見出し。面（背景）は敷かない */
+.axis-name {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+/* メーターと点数は右端。どの行も右端がそろう */
 .axis-meter {
-  grid-area: meter;
+  flex: none;
+  margin-left: auto;
   display: flex;
-  gap: 5px;
-  padding: var(--s-3) var(--s-3) var(--s-1);
+  align-items: center;
+  gap: 6px;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: #e2e6ea;
 }
 
 .dot-on { background: var(--accent); }
-.axis-weak .dot-on { background: var(--warn-line); }
+/* 弱い観点は点の色も変える。薄い金色だと点がついて見えないので濃い側を使う */
+.finding-weak .dot-on { background: var(--warn); }
 
 .axis-score {
-  grid-area: score;
-  align-self: start;
-  padding: var(--s-3) var(--s-3) var(--s-1) 0;
+  flex: none;
+  min-width: 34px;
+  text-align: right;
   font-size: 14px;
   font-weight: 700;
+  line-height: 1.5;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
-  text-align: right;
 }
 
-.axis-weak .axis-score { color: var(--warn); }
+.axis-score small {
+  margin-left: 1px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-mid);
+}
 
+.finding-weak .axis-score { color: var(--warn); }
+
+/* 点数が付かないR。メーター＋点数と同じ幅・同じ右端に置いて行の作りをそろえる。
+   破線の枠は「採点していない」しるし（色だけに頼らないため） */
+.axis-check {
+  flex: none;
+  margin-left: auto;
+  min-width: 111px;
+  padding: 1px var(--s-2);
+  border: 1px dashed #99a3ad;
+  border-radius: var(--r-s);
+  background: var(--panel);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.7;
+  color: var(--ink-mid);
+  text-align: center;
+}
+
+/* 行の2段目。その観点で何を見ているか */
 .axis-hint {
-  grid-area: hint;
-  padding: 0 var(--s-3) var(--s-3);
+  margin: var(--s-1) 0 0;
+  padding-left: var(--indent);
   font-size: 13px;
   line-height: 1.7;
   color: var(--ink-mid);
+}
+
+/* 指摘は1件＝1枠。左の縦線と「！」で直しどころだと分かるようにする */
+.finding-comments {
+  list-style: none;
+  margin: var(--s-3) 0 0;
+  padding: 0 0 0 var(--indent);
+}
+
+.finding-comments li {
+  position: relative;
+  margin-top: var(--s-2);
+  padding: var(--s-3) var(--s-3) var(--s-3) 40px;
+  border-left: 3px solid var(--warn-line);
+  background: var(--warn-weak);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.finding-comments li:first-child { margin-top: 0; }
+
+.finding-comments li::before {
+  content: "！";
+  position: absolute;
+  left: var(--s-3);
+  top: 13px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--warn-line);
+  color: var(--warn);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+
+/* R（項目との関連）は直しどころではなく確認。青と「？」で指摘と区別する */
+.finding-check .finding-comments li {
+  border-left-color: var(--accent-line);
+  background: var(--accent-weak);
+}
+
+.finding-check .finding-comments li::before {
+  content: "？";
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* 指摘が無い観点。枠を作らず一言だけ置き、指摘のある行と重さの差を付ける */
+.finding-ok {
+  margin: var(--s-3) 0 0;
+  padding-left: var(--indent);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--accent);
 }
 
 /* ---------------------------------------------------------------- フッター */
@@ -707,9 +733,6 @@ textarea { resize: vertical; min-height: 132px; }
   .block { margin-top: var(--s-5); }
   .block-comments { margin-top: var(--s-5); }
 
-  .comment { padding: var(--s-3) var(--s-3) var(--s-3) 40px; }
-  .comment::before { left: var(--s-2); top: 13px; }
-
   .block-skeleton .skeleton { padding: var(--s-3); line-height: 2; }
 
   /* 狭い画面では枠が1行ずつ改行されて読みにくいので、枠の中でも折り返す */
@@ -722,104 +745,13 @@ textarea { resize: vertical; min-height: 132px; }
 
   .empty { min-height: 140px; }
 
-  /* 観点別も上下に積む。点数は行の右端に置く */
-  .axis {
-    grid-template-columns: minmax(0, 1fr) 40px;
-    grid-template-areas:
-      "name  score"
-      "meter meter"
-      "hint  hint";
-  }
-
-  .axis-name {
-    border-right: none;
-    padding: var(--s-2) var(--s-3);
-    border-bottom: 1px solid var(--line-soft);
-  }
-
-  .axis-score {
-    align-self: center;
-    padding: var(--s-2) var(--s-3) var(--s-2) 0;
-    background: var(--cell);
-    border-bottom: 1px solid var(--line-soft);
-    align-self: stretch;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-
-  .axis-meter { padding: var(--s-3) var(--s-3) var(--s-1); }
-  .axis-hint { padding: 0 var(--s-3) var(--s-3); }
+  /* 観点別の指摘：狭い画面では下げ幅をやめ、指摘1行の文字数を確保する */
+  .findings { --indent: 0px; }
+  .finding { padding: var(--s-3); }
+  .finding-comments li { padding: var(--s-3) var(--s-3) var(--s-3) 36px; }
+  .finding-comments li::before { left: var(--s-2); top: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
-}
-
-.note-legend { margin: calc(var(--s-1) * -1) 0 var(--s-3); }
-
-/* --------------------------------------------------------------------------
-   観点別の指摘（観点と指摘を1つの表にまとめたもの）
-   -------------------------------------------------------------------------- */
-
-.findings { list-style: none; margin: 0; padding: 0; }
-
-.finding {
-  border: 1px solid var(--line);
-  border-top: none;
-  padding: 14px 16px;
-}
-
-.finding:first-child { border-top: 1px solid var(--line); }
-
-.finding-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.finding-head .axis-name { font-weight: 600; }
-
-.finding-head .axis-meter { margin-left: auto; }
-
-.finding-head .axis-score { min-width: 34px; text-align: right; }
-.finding-head .axis-score small { color: var(--ink-light); font-size: 11px; }
-
-.axis-check {
-  margin-left: auto;
-  padding: 2px 10px;
-  border: 1px solid var(--line);
-  border-radius: 2px;
-  font-size: 12px;
-  color: var(--ink-light);
-}
-
-.finding .axis-hint {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: var(--ink-light);
-}
-
-.finding-comments {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 0;
-}
-
-.finding-comments li {
-  padding: 10px 12px;
-  margin-top: 6px;
-  background: var(--accent-weak);
-  border-left: 3px solid var(--accent-line, var(--accent));
-  font-size: 13px;
-  line-height: 1.8;
-}
-
-.finding-weak .finding-comments li { background: #fdf6ea; border-left-color: #c08a2e; }
-
-.finding-ok { margin: 8px 0 0; font-size: 12px; color: var(--accent); }
-
-@media (max-width: 520px) {
-  .finding-head { flex-wrap: wrap; }
-  .finding-head .axis-meter { margin-left: 0; }
 }
