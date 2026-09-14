@@ -182,6 +182,22 @@
     });
   }
 
+  /**
+   * 改善案を出し、その文章を同じ採点エンジンにかけて点数を添える。
+   *
+   * Gemini をつないだら、ここに渡す text をAIが書いた文章に差し替えるだけでよい。
+   * byAi を true にすると見出しと注記がAI向けの文面に変わる。
+   * 点数の出し方（scoreDraft を通す）は本人が書いた文章とまったく同じ。
+   */
+  function renderImprovement(text, mbo, byAi) {
+    el('improve-text').textContent = text;
+    el('improve-total').textContent = scoreDraft(text, mbo).total.toFixed(1);
+    el('improve-label').textContent = byAi ? 'AIが書いた改善案' : 'この型に沿って書いた例';
+    el('improve-source').textContent = byAi
+      ? 'AIが書いた文章を、あなたの文章と同じ基準で採点しました。'
+      : 'AIは未接続です。いまは書き方の型と、その型に沿って書いた例を出しています。';
+  }
+
   /** 書き直しの型。〈　〉は自分で埋める枠なので、枠として見えるようにする。 */
   function renderSkeleton(text) {
     const box = el('skeleton');
@@ -221,11 +237,7 @@
 
     renderFindings(advice);
     renderSkeleton(buildSkeleton(result, mbo));
-
-    // 型に沿って書くと何点になるかを、実際に採点して見せる
-    const example = buildExample();
-    el('example-text').textContent = example;
-    el('example-total').textContent = scoreDraft(example, mbo).total.toFixed(1);
+    renderImprovement(buildExample(), mbo, false);
 
     el('empty').hidden = true;
     el('result').hidden = false;

@@ -756,30 +756,42 @@ textarea { resize: vertical; min-height: 132px; }
   * { transition: none !important; }
 }
 
-/* 型に沿って書いた記入例と、その点数 */
-.example {
+/* 改善案と、その点数 */
+.improve {
   margin-top: 14px;
   padding: 12px 14px;
   border: 1px solid var(--line);
   background: #fff;
 }
 
-.example-head {
+.improve-head {
   display: flex;
   align-items: baseline;
   gap: 10px;
   margin: 0 0 8px;
 }
 
-.example-label { font-size: 12px; font-weight: 700; }
+.improve-label { font-size: 12px; font-weight: 700; }
 
-.example-score {
+.improve-score {
   margin-left: auto;
   font-size: 18px;
   font-weight: 700;
   color: var(--accent);
 }
 
-.example-score small { font-size: 11px; font-weight: 400; }
+.improve-score small { font-size: 11px; font-weight: 400; }
 
-.example-text { margin: 0; font-size: 13px; line-height: 1.9; }
+.improve-text { margin: 0; font-size: 13px; line-height: 1.9; }
+
+/* 書き方の型は、改善案の下にたたんで置く */
+.skeleton-box { margin-top: 14px; }
+
+.skeleton-box > summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--accent);
+  padding: 6px 0;
+}
+
+.skeleton-box[open] > summary { margin-bottom: 8px; }
