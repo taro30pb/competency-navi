@@ -5,6 +5,7 @@
 
 - 対象：グリーンライフ産業／グランド工房の社員
 - ブランド：社内向けのため `green-life-brand` スキルを参照する
+- GitHub：https://github.com/taro30pb/competency-navi （**Public**。課題として第三者レビューを受けるため。実データは載せない）
 
 ## 状態
 
