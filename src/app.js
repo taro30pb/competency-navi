@@ -19,7 +19,94 @@
       name: el('mbo-name').value,
       current: el('mbo-current').value,
       target: el('mbo-target').value,
+      competency: selectedCompetency(),
     };
+  }
+
+  // ---- コンピテンシー項目の選択 ----------------------------------------
+
+  // data/assignments.local.js は手元にだけ置くファイル。無くてもアプリは動く。
+  const assignments = (typeof ASSIGNMENTS !== 'undefined') ? ASSIGNMENTS : [];
+  const master = (typeof COMPETENCIES !== 'undefined') ? COMPETENCIES : [];
+
+  // 全社共通の項目は職位に関係なく全員に入る
+  const companyWide = assignments.filter(function (g) { return g.group.indexOf('全社共通') === 0; });
+  const byRole = assignments.filter(function (g) { return g.group.indexOf('全社共通') !== 0; });
+
+  function roleLabel(g) {
+    return [g.division, g.role].filter(function (x) { return x; }).join('　').replace(/\s+/g, ' ').trim();
+  }
+
+  function option(value, label) {
+    const o = document.createElement('option');
+    o.value = value;
+    o.textContent = label;
+    return o;
+  }
+
+  function fillRoles() {
+    if (byRole.length === 0) return;          // 割当データが無い環境では出さない
+    const sel = el('role');
+    sel.appendChild(option('', '選んでください'));
+    byRole.forEach(function (g, i) {
+      sel.appendChild(option(String(i), roleLabel(g)));
+    });
+    el('role-field').hidden = false;
+  }
+
+  function fillCompetencies() {
+    const sel = el('competency');
+    sel.innerHTML = '';
+    sel.appendChild(option('', '選ばない（文章だけで診断する）'));
+
+    const roleIndex = el('role').value;
+    const mine = [];
+    companyWide.forEach(function (g) { g.items.forEach(function (it) { mine.push(it); }); });
+    if (roleIndex !== '') {
+      byRole[Number(roleIndex)].items.forEach(function (it) { mine.push(it); });
+    }
+
+    if (mine.length > 0) {
+      const own = document.createElement('optgroup');
+      own.label = roleIndex === '' ? '全社共通' : 'あなたの項目';
+      mine.forEach(function (it) {
+        own.appendChild(option(it.code, it.code + '　' + it.name + (it.note ? '（' + it.note + '）' : '')));
+      });
+      sel.appendChild(own);
+    }
+
+    if (master.length > 0) {
+      const all = document.createElement('optgroup');
+      all.label = '83項目から選ぶ';
+      master.forEach(function (it) {
+        all.appendChild(option(it.code, it.code + '　' + it.name));
+      });
+      sel.appendChild(all);
+    }
+  }
+
+  /** 選ばれている項目（コード・名称・定義）を返す。選んでいなければ null */
+  function selectedCompetency() {
+    const code = el('competency').value;
+    if (!code) return null;
+    const found = master.filter(function (it) { return it.code === code; })[0];
+    if (found) return found;
+    let hit = null;
+    assignments.forEach(function (g) {
+      g.items.forEach(function (it) { if (it.code === code) hit = it; });
+    });
+    return hit;
+  }
+
+  function showDefinition() {
+    const item = selectedCompetency();
+    const box = el('definition');
+    if (!item) {
+      box.hidden = true;
+      return;
+    }
+    box.textContent = item.name + '　—　' + (item.definition || '');
+    box.hidden = false;
   }
 
   function renderAxes(axes) {
@@ -158,6 +245,20 @@
     run();
   }
 
+  el('role').addEventListener('change', function () {
+    fillCompetencies();
+    showDefinition();
+    if (!el('result').hidden) run();
+  });
+
+  el('competency').addEventListener('change', function () {
+    showDefinition();
+    if (!el('result').hidden) run();
+  });
+
+  fillRoles();
+  fillCompetencies();
+
   el('run').addEventListener('click', run);
   el('sample').addEventListener('click', fillSample);
 
@@ -168,6 +269,9 @@
     ['mbo-name', 'mbo-current', 'mbo-target', 'mbo-weight', 'draft'].forEach(function (id) {
       el(id).value = '';
     });
+    el('role').value = '';
+    fillCompetencies();
+    showDefinition();
     el('result').hidden = true;
     el('empty').hidden = false;
     el('empty').textContent = '行動目標を入力して「診断する」を押してください。';

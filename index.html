@@ -22,7 +22,23 @@
     <h2 id="input-heading">入力</h2>
 
     <fieldset class="field-group">
-      <legend>対応するMBO（達成度を測る指標）</legend>
+      <legend>取り組むコンピテンシー（行動目標の項目）</legend>
+
+      <label class="field" id="role-field" hidden>
+        <span class="field-label">所属・職位</span>
+        <select id="role"></select>
+      </label>
+
+      <label class="field">
+        <span class="field-label">項目</span>
+        <select id="competency"></select>
+      </label>
+
+      <p class="definition" id="definition" hidden></p>
+    </fieldset>
+
+    <fieldset class="field-group">
+      <legend>対応するMBO（達成度を測る指標）　※分かる範囲で</legend>
 
       <label class="field">
         <span class="field-label">指標名</span>
@@ -99,6 +115,8 @@
   <p>グリーンライフ産業株式会社　社内ツール</p>
 </footer>
 
+<script src="src/competencies.js"></script>
+<script src="data/assignments.local.js"></script>
 <script src="src/scoring.js"></script>
 <script src="src/advice.js"></script>
 <script src="src/app.js"></script>

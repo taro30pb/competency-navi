@@ -29,6 +29,28 @@ function displayWord(word) {
   return DISPLAY_FORM[word] || word;
 }
 
+/**
+ * コンピテンシーの定義文から、内容を表す言葉だけを取り出す。
+ * 「環境や状況の変化に応じる力」→ ['環境', '状況', '変化', '応じる力']
+ *
+ * 注意：これで本文との一致を見ても、項目に沿っているかは判定できない。
+ * 「変化に応じる」を「変わる場面で試す」と書く人を拾えないため。
+ * 沿っているかどうかの判断はAIにつないだ後に任せる。
+ */
+function definitionKeywords(definition) {
+  return (definition || '')
+    .split(/[やにをはがのとでも、。・（）()　\s]+/)
+    .map(function (w) { return w.trim(); })
+    .filter(function (w) { return w.length >= 2; });
+}
+
+/** 書いた文章が、選んだコンピテンシーの内容に触れているか */
+function touchesCompetency(text, competency) {
+  if (!competency) return true;
+  const words = definitionKeywords(competency.definition).concat([competency.name]);
+  return words.some(function (w) { return text.indexOf(w) !== -1; });
+}
+
 /** 初稿が弱くなる典型的な原因。優先して指摘する */
 const ROOT_CAUSES = [
   {
@@ -146,8 +168,18 @@ function buildAdvice(result, mbo) {
     };
   });
 
+  const list = comments.slice(0, 5);
+
+  // 選んだ項目に効く行動かどうかは、言葉の一致では判定できない（「変化」と「変わる場面」は
+  // 同じことを言っているが文字は違う）。決めつけずに、本人に確認してもらう。
+  if (mbo.competency) {
+    list.push('〈確認〉この行動は「' + mbo.competency.name + '（' + mbo.competency.definition
+      + '）」に効きますか。上長はこの項目で見ます。ずれていると感じたら、'
+      + '項目の言葉に寄せて書き直してください。');
+  }
+
   return {
-    comments: comments.slice(0, 5),
+    comments: list,
     praise: praise,
     weakAxes: weakAxes,
     smart: smart,

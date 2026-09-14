@@ -190,6 +190,7 @@ function scoreDraft(draft, mbo) {
   const total = Math.round((sum / axes.length) * 10) / 10;
 
   return {
+    text: text,
     total: total,
     max: 4,
     axes: axes,

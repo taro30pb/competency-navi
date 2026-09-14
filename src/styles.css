@@ -175,7 +175,7 @@ body {
 
 .field-draft { margin-top: var(--s-5); }
 
-input[type="text"], textarea {
+input[type="text"], textarea, select {
   width: 100%;
   min-width: 0;
   min-height: 44px;
@@ -193,9 +193,9 @@ input[type="text"]::placeholder, textarea::placeholder {
   color: #8b918c;
 }
 
-input[type="text"]:hover, textarea:hover { border-color: #b9c0b9; }
+input[type="text"]:hover, textarea:hover, select:hover { border-color: #b9c0b9; }
 
-input[type="text"]:focus, textarea:focus {
+input[type="text"]:focus, textarea:focus, select:focus {
   outline: 2px solid var(--green);
   outline-offset: 1px;
   border-color: var(--green);
@@ -570,4 +570,14 @@ textarea { resize: vertical; min-height: 152px; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
+}
+
+/* 選んだコンピテンシー項目の定義。書き出しの手がかりとして見せる */
+.definition {
+  margin: -4px 0 0;
+  padding: 12px 14px;
+  background: var(--accent-weak, #eef2ee);
+  border-radius: 3px;
+  font-size: 13px;
+  line-height: 1.7;
 }
