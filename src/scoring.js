@@ -196,15 +196,32 @@ function scoreDraft(draft, mbo) {
     reportTargets.length >= 1,   // 誰に・どの場で報告するかが決まっている
   ]);
 
+  /**
+   * 最低ライン。人事評価の分野で「これだけは満たせ」とされている3点で、
+   * あしたのチームが判定に用いている「いつ・頻度・可視化」と、NGワードの排除にあたる。
+   *
+   *   ① 気持ちを表すだけの曖昧な言葉が無い
+   *   ② 頻度か期限のどちらかが決まっている
+   *   ③ 上司が確認できる形になっている（提出物・記録・レビュー・報告先）
+   *
+   * ここを満たした目標は、数値まで揃っていなくても提出できる水準とみなし、
+   * 総合点が3.5を下回らないようにする。満たした人に「書き直し」と言わないため。
+   */
+  const meetsBaseline = vague.length === 0
+    && (frequencies.length + deadlines.length) >= 1
+    && (evidence.length >= 1 || reportTargets.length >= 1 || reports.length >= 1);
+
   // 最終点は、点数のある5観点の平均。小数第1位まで出す（例 3.2／5）
   const scored = axes.filter(function (a) { return a.score !== null; });
   let sum = 0;
   scored.forEach(function (a) { sum += a.score; });
-  const total = Math.round((sum / scored.length) * 10) / 10;
+  let total = Math.round((sum / scored.length) * 10) / 10;
+  if (meetsBaseline && total < 3.5) total = 3.5;
 
   return {
     text: text,
     total: total,
+    meetsBaseline: meetsBaseline,
     max: 5,
     axes: axes,
     detected: {
@@ -224,9 +241,9 @@ function judge(total) {
     return { level: 'pass', label: '十分に書けています',
       note: '期末に自分の成果を説明しやすい形になっています。' + note };
   }
-  if (total >= 3.0) {
-    return { level: 'near', label: 'あと少し',
-      note: '骨格はできています。弱い観点を1つ2つ足すと、さらに伝わる形になります。' + note };
+  if (total >= 3.5) {
+    return { level: 'near', label: '提出できる水準',
+      note: '最低限そろえるべきものは入っています。弱い観点を1つ2つ足すと、さらに伝わる形になります。' + note };
   }
   return { level: 'weak', label: 'もう一段具体的にできます',
     note: '下の指摘を1つずつ足していくと、期末に「やった」と言いやすい目標になります。' + note };

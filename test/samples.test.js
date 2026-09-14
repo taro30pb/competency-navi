@@ -90,13 +90,13 @@ console.log(tooKind === 0
   : tooKind + ' 件が甘く出ています。語彙を広げすぎていないか見直すこと。');
 
 console.log('');
-console.log('■ 社外の模範解答との照らし合わせ（OKは2.5点超、NGは1.5点以下）');
+console.log('■ 社外の模範解答との照らし合わせ（OKは3.5点以上、NGは1.5点以下）');
 console.log('');
 
 let offBase = 0;
 benchmark.forEach(function (c) {
   const r = scoreDraft(c.text);
-  const ok = c.kind === 'OK' ? r.total > 2.5 : r.total <= 1.5;
+  const ok = c.kind === 'OK' ? r.total >= 3.5 : r.total <= 1.5;
   console.log((ok ? '  OK ' : '  ずれ') + ' ' + r.total.toFixed(1) + '/5  ' + c.kind + '例・' + c.role
     + '   ' + r.axes.map(function (a) { return a.smart + (a.score === null ? '-' : a.score); }).join(' '));
   if (!ok) offBase++;
