@@ -3,7 +3,19 @@
  *
  * 採点結果（scoring.js）を受け取り、上長の立場から見た指摘を日本語で組み立てる。
  * AIは使わない。弱い観点と、検出した言葉から文章を選ぶ。
+ *
+ * 指摘はSMARTの法則（S 具体的／M 測れる／A 達成できる／R 指標とつながる／T 期限がある）に沿う。
  */
+
+/** SMARTの各文字の説明。画面で凡例として使う */
+const SMART_MEANING = {
+  'S': { word: 'Specific', label: '具体的', note: '誰の何を、どの場面で' },
+  'M': { word: 'Measurable', label: '測れる', note: '件数・人数・％で数えられる' },
+  'A': { word: 'Achievable', label: '達成できる', note: '自分の力で動かせて、無理のない量' },
+  'R': { word: 'Relevant', label: '指標とつながる', note: '担当するMBOに効く' },
+  'T': { word: 'Time-bound', label: '期限がある', note: 'いつまでに・どの頻度で' },
+  '＋': { word: 'Evaluate & Review', label: '見直す', note: '報告と立て直しの仕組み' },
+};
 
 /** 語幹のまま出すと読みにくい言葉を、指摘文での見せ方に直す */
 const DISPLAY_FORM = {
@@ -41,6 +53,28 @@ const ROOT_CAUSES = [
     },
   },
   {
+    key: 'dependent',
+    test: function (r) {
+      return r.detected.dependents.length > 0;
+    },
+    message: function (r) {
+      return '「' + r.detected.dependents[0] + '」のように、他の人が動くことを前提にした書き方が入っています。'
+        + 'SMARTのA（達成できる）は、自分の判断で動かせることが条件です。'
+        + '相手が動かなかった場合でも自分が実行できる行動に言い換えてください。';
+    },
+  },
+  {
+    key: 'stretch',
+    test: function (r) {
+      return r.detected.growthRatio !== null && r.detected.growthRatio >= 3 && r.detected.quantities.length === 0;
+    },
+    message: function (r, mbo) {
+      return mbo.current + 'から' + mbo.target + 'は現状の3倍以上です。'
+        + '意気込みとしては良いのですが、SMARTのA（達成できる）の観点では、'
+        + '毎週あるいは毎日どれだけ積み上げれば届くのかを数字で示す必要があります。';
+    },
+  },
+  {
     key: 'backcast',
     test: function (r, mbo) {
       return Boolean(mbo && mbo.current && mbo.target)
@@ -55,12 +89,12 @@ const ROOT_CAUSES = [
 
 /** 観点ごとの指摘文。点数が低いときに出す */
 const AXIS_ADVICE = {
-  specificity: '誰の何を対象にするのかが読み取れません。担当する人数・件数・範囲を書き入れてください。',
-  quantity: '数字が入っていないため、やったかどうかを後から数えられません。件数・人数・％のいずれかで書いてください。',
-  linkage: '対応するMBOとのつながりが見えません。指標名と、現状値から目標値までの差を本文に入れてください。',
-  method: '何をするのかが動作になっていません。「提案する」「一覧化する」「同行する」のように、自分が動かせる行動で書いてください。',
-  timing: 'いつやるのかが決まっていません。「毎週金曜に」「月末までに」のように、頻度か期限のどちらかを必ず入れてください。',
-  followup: '進み具合を誰にどう報告するか、遅れたときにどう立て直すかがありません。報告の場と、遅れた場合の手当てを書き添えてください。',
+  specificity: '［S 具体的］誰の何を対象にするのかが読み取れません。担当する人数・件数・範囲を書き入れてください。',
+  quantity: '［M 測れる］数字が入っていないため、やったかどうかを後から数えられません。件数・人数・％のいずれかで書いてください。',
+  linkage: '［R 指標とつながる］対応するMBOとのつながりが見えません。指標名と、現状値から目標値までの差を本文に入れてください。',
+  method: '［A 達成できる］何をするのかが動作になっていません。「提案する」「一覧化する」「同行する」のように、自分が動かせる行動で書いてください。',
+  timing: '［T 期限がある］いつやるのかが決まっていません。「毎週金曜に」「月末までに」のように、頻度か期限のどちらかを必ず入れてください。',
+  followup: '［＋ 見直す］進み具合を誰にどう報告するか、遅れたときにどう立て直すかがありません。報告の場と、遅れた場合の手当てを書き添えてください。',
 };
 
 /** 褒める材料。強い観点があれば1つだけ返す */
@@ -98,10 +132,25 @@ function buildAdvice(result, mbo) {
   const strongAxes = result.axes.filter(function (a) { return a.score >= 4; });
   const praise = strongAxes.length > 0 ? AXIS_PRAISE[strongAxes[0].key] : null;
 
+  // SMARTのどの文字が満たせていて、どれが足りないか（S→M→A→R→T→＋の順に並べる）
+  const SMART_ORDER = ['S', 'M', 'A', 'R', 'T', '＋'];
+  const smart = result.axes.slice().sort(function (x, y) {
+    return SMART_ORDER.indexOf(x.smart) - SMART_ORDER.indexOf(y.smart);
+  }).map(function (axis) {
+    const meaning = SMART_MEANING[axis.smart] || {};
+    return {
+      letter: axis.smart,
+      label: meaning.label || axis.label,
+      note: meaning.note || axis.hint,
+      met: axis.score >= 4,
+    };
+  });
+
   return {
     comments: comments.slice(0, 5),
     praise: praise,
     weakAxes: weakAxes,
+    smart: smart,
   };
 }
 
@@ -115,11 +164,13 @@ function buildSkeleton(result, mbo) {
   const current = mbo.current || '〈現状値〉';
   const target = mbo.target || '〈目標値〉';
 
-  return '〈対象と件数〉に対して〈具体的な行動〉を〈頻度・期限〉に実施し、'
-    + indicator + 'を' + current + 'から' + target + 'にする。'
-    + '進捗は〈頻度〉に〈報告先〉へ報告し、遅れた場合は〈立て直しの手当て〉を行う。';
+  // SMARTの順（S→M→A→R→T→＋）に枠が並ぶようにしている
+  return '〈対象と件数：S〉に対して〈自分が動かせる行動：A〉を〈頻度・期限：T〉に実施し、'
+    + '〈行動の量：M〉を積み上げることで、'
+    + indicator + 'を' + current + 'から' + target + 'にする〈R〉。'
+    + '進捗は〈頻度〉に〈報告先〉へ報告し、遅れた場合は〈立て直しの手当て〉を行う〈＋〉。';
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { buildAdvice: buildAdvice, buildSkeleton: buildSkeleton };
+  module.exports = { buildAdvice: buildAdvice, buildSkeleton: buildSkeleton, SMART_MEANING: SMART_MEANING };
 }

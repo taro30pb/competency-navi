@@ -3,6 +3,14 @@
  *
  * 行動目標の文章を6観点で採点し、指摘コメントの材料を返す。
  * AIは使わない。すべて手元で完結する検査。
+ *
+ * 6観点はSMARTの法則に対応させている。
+ *   具体性      S  Specific    はっきりしているか
+ *   定量性      M  Measurable  数えられるか
+ *   手段        A  Achievable  自分の力でやれるか
+ *   KPI連動     R  Relevant    会社の指標とつながっているか
+ *   期限・頻度   T  Time-bound  いつまでかが決まっているか
+ *   報告・振返り  ＋  SMARTを保つ仕組み（SMARTERのE・R）
  */
 
 /** 気持ち・態度を表すだけで、行動として測れない言葉 */
@@ -22,6 +30,9 @@ const ACTION_VERBS = [
   '連絡', '点検', '登録', '設定', '依頼', '同行', '説明', '集計', '分析', '整理',
   '配布', 'レビュー', '面談', '架電', '送付', '入力', '更新', '見積', '発注', '巡回',
 ];
+
+/** 自分ではなく他人が動くことになっている言葉。達成可能性（A）を下げる */
+const DEPENDENT_WORDS = ['してもらう', 'してもらえ', 'いただく', 'させる', '会社が', '上司が', '上長が', '他部署が', '誰かが'];
 
 /** 仕組み・型として残る言葉 */
 const SYSTEM_WORDS = ['一覧', 'チェックリスト', 'テンプレート', 'フォーム', 'ルール', '手順', '仕組み', '台帳', 'シート'];
@@ -74,6 +85,17 @@ function longestCommonSubstring(a, b) {
   return best;
 }
 
+/**
+ * 現状値から目標値への伸び方を測る。
+ * 「3件→8件」なら2.67倍。数値が読めないときは null を返す。
+ */
+function growthRatio(current, target) {
+  const c = parseFloat(String(current).replace(/[^\d.]/g, ''));
+  const t = parseFloat(String(target).replace(/[^\d.]/g, ''));
+  if (!isFinite(c) || !isFinite(t) || c <= 0) return null;
+  return t / c;
+}
+
 /** 1〜5点の範囲に収める */
 function clamp(score) {
   return Math.max(1, Math.min(5, score));
@@ -98,6 +120,8 @@ function scoreDraft(draft, mbo) {
   const reports = findWords(text, REPORT_WORDS);
   const reviews = findWords(text, REVIEW_WORDS);
   const outcomes = findWords(text, OUTCOME_WORDS);
+  const dependents = findWords(text, DEPENDENT_WORDS);
+  const ratio = growthRatio(mbo.current, mbo.target);
   const quantities = findQuantities(text);
   const numbers = findNumbers(text);
 
@@ -110,7 +134,7 @@ function scoreDraft(draft, mbo) {
   if (quantities.length > 0) specificity += 1;
   if (vague.length === 0) specificity += 1;
   if (vague.length >= 2) specificity -= 1;
-  axes.push({ key: 'specificity', label: '具体性', score: clamp(specificity), hint: '誰の・何を・どの場面で、が読んで分かるか' });
+  axes.push({ key: 'specificity', label: '具体性', smart: 'S', score: clamp(specificity), hint: '誰の・何を・どの場面で、が読んで分かるか' });
 
   // ② 定量性 — 数えられる形になっているか
   let quantity = 1;
@@ -118,7 +142,7 @@ function scoreDraft(draft, mbo) {
   if (quantities.length >= 2) quantity += 1;
   if (quantities.length >= 3) quantity += 1;
   if (quantities.length === 0 && numbers.length > 0) quantity += 1;
-  axes.push({ key: 'quantity', label: '定量性', score: clamp(quantity), hint: '件数・人数・％など、数えられる形で書かれているか' });
+  axes.push({ key: 'quantity', label: '定量性', smart: 'M', score: clamp(quantity), hint: '件数・人数・％など、数えられる形で書かれているか' });
 
   // ③ KPI連動 — 対応するMBOにつながっているか
   let linkage = 1;
@@ -132,7 +156,7 @@ function scoreDraft(draft, mbo) {
   const hasTarget = target !== '' && half.indexOf(target) !== -1;
   if (hasCurrent && hasTarget) linkage += 2;
   else if (hasTarget) linkage += 1;
-  axes.push({ key: 'linkage', label: 'KPI連動', score: clamp(linkage), hint: '対応する指標と、現状値→目標値の逆算が入っているか' });
+  axes.push({ key: 'linkage', label: 'KPI連動', smart: 'R', score: clamp(linkage), hint: '対応する指標と、現状値→目標値の逆算が入っているか' });
 
   // ④ 手段 — 何をするのかが動作で書かれているか
   let method = 1;
@@ -141,21 +165,25 @@ function scoreDraft(draft, mbo) {
   if (actions.length >= 3) method += 1;
   if (systems.length >= 1) method += 1;
   if (outcomes.length > 0 && actions.length === 0) method -= 1;
-  axes.push({ key: 'method', label: '手段', score: clamp(method), hint: '結果ではなく、自分が動かせる行動で書かれているか' });
+  // 他人が動く前提の書き方は、自分では達成できないので下げる
+  if (dependents.length > 0 && actions.length <= 1) method -= 1;
+  // 裏づけのない大きな跳ね上がり（現状の3倍以上）は、量の根拠が要る
+  if (ratio !== null && ratio >= 3 && quantities.length === 0) method -= 1;
+  axes.push({ key: 'method', label: '手段', smart: 'A', score: clamp(method), hint: '結果ではなく、自分が動かせる行動で書かれているか' });
 
   // ⑤ 期限・頻度 — いつやるのか
   let timing = 1;
   if (frequencies.length >= 1) timing += 2;
   if (deadlines.length >= 1) timing += 2;
   if (frequencies.length + deadlines.length >= 3) timing += 1;
-  axes.push({ key: 'timing', label: '期限・頻度', score: clamp(timing), hint: 'いつまでに・どのくらいの頻度で、が決まっているか' });
+  axes.push({ key: 'timing', label: '期限・頻度', smart: 'T', score: clamp(timing), hint: 'いつまでに・どのくらいの頻度で、が決まっているか' });
 
   // ⑥ 報告・振返り — 続く仕組みがあるか
   let followup = 1;
   if (reports.length >= 1) followup += 2;
   if (reviews.length >= 1) followup += 2;
   if (reports.length >= 1 && reviews.length >= 1 && (frequencies.length >= 1 || deadlines.length >= 1)) followup += 1;
-  axes.push({ key: 'followup', label: '報告・振返り', score: clamp(followup), hint: '誰に報告し、ずれたときにどう立て直すかがあるか' });
+  axes.push({ key: 'followup', label: '報告・振返り', smart: '＋', score: clamp(followup), hint: '誰に報告し、ずれたときにどう立て直すかがあるか' });
 
   let total = 0;
   axes.forEach(function (a) { total += a.score; });
@@ -167,7 +195,7 @@ function scoreDraft(draft, mbo) {
     detected: {
       vague: vague, actions: actions, systems: systems, deadlines: deadlines,
       frequencies: frequencies, reports: reports, reviews: reviews,
-      outcomes: outcomes, quantities: quantities,
+      outcomes: outcomes, quantities: quantities, dependents: dependents, growthRatio: ratio,
     },
   };
 }
