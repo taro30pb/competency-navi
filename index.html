@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>コンピテンシー目標ナビ</title>
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+
+<header class="header">
+  <h1>コンピテンシー目標ナビ</h1>
+  <p class="lead">自分で書いた行動目標を貼ると、上長が判定できる水準になっているかを6つの観点で診断します。</p>
+</header>
+
+<main class="layout">
+
+  <section class="panel" aria-labelledby="input-heading">
+    <h2 id="input-heading">入力</h2>
+
+    <fieldset class="field-group">
+      <legend>対応するMBO（達成度を測る指標）</legend>
+
+      <label class="field">
+        <span class="field-label">指標名</span>
+        <input type="text" id="mbo-name" placeholder="例）実施後レビュー期限遵守率">
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">現状値</span>
+          <input type="text" id="mbo-current" placeholder="例）80%">
+        </label>
+        <label class="field">
+          <span class="field-label">目標値</span>
+          <input type="text" id="mbo-target" placeholder="例）100%">
+        </label>
+        <label class="field">
+          <span class="field-label">ウェイト</span>
+          <input type="text" id="mbo-weight" placeholder="例）0.30">
+        </label>
+      </div>
+    </fieldset>
+
+    <label class="field">
+      <span class="field-label">自分で書いた行動目標</span>
+      <textarea id="draft" rows="6" placeholder="例）実施後レビューを忘れないように、期限をしっかり守ってやるようにします。"></textarea>
+    </label>
+
+    <div class="actions">
+      <button type="button" id="run" class="button button-primary">診断する</button>
+      <button type="button" id="sample" class="button">サンプルを入れる</button>
+      <button type="button" id="clear" class="button">消す</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="result-heading">
+    <h2 id="result-heading">診断結果</h2>
+
+    <div id="empty" class="empty">
+      行動目標を入力して「診断する」を押してください。
+    </div>
+
+    <div id="result" class="result" hidden>
+      <div class="verdict">
+        <div class="score">
+          <span id="score-total">0</span><span class="score-max">/30</span>
+        </div>
+        <div class="verdict-text">
+          <span id="verdict-label" class="badge">—</span>
+          <p id="verdict-note"></p>
+        </div>
+      </div>
+
+      <h3>観点別</h3>
+      <ul id="axes" class="axes"></ul>
+
+      <h3>上長から見た指摘</h3>
+      <ul id="comments" class="comments"></ul>
+
+      <h3>書き直しの型</h3>
+      <p class="skeleton" id="skeleton"></p>
+      <p class="note">〈　〉の中を自分の仕事の言葉で埋めると、合格水準の形になります。</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>グリーンライフ産業株式会社　社内ツール</p>
+</footer>
+
+<script src="src/scoring.js"></script>
+<script src="src/advice.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>

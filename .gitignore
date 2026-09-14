@@ -24,3 +24,8 @@ _archive/
 *.xlsx
 *.xls
 *.csv
+
+# 参考資料の原本（公開リポジトリには上げない）
+*.pptx
+*.pdf
+*.docx
