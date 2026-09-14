@@ -1,229 +1,573 @@
-/* コンピテンシー目標ナビ — 基本スタイル（仕上げ前の下地） */
+/* ==========================================================================
+   コンピテンシー目標ナビ — スタイル
+   グリーンライフ産業 コーポレートブランド準拠
+   ・コーポレートグリーン（Pantone 3435C 近似 #154734）はアクセントとして使用
+   ・背景は白／生成り。見出し Noto Serif JP ／ 本文 Noto Sans JP
+   ・余白は 4px の倍数で統一
+   ========================================================================== */
 
 :root {
-  --ink: #2b2b2b;
-  --ink-light: #6b6b6b;
-  --line: #dcdcd6;
-  --ground: #faf9f6;
-  --panel: #ffffff;
-  --accent: #1f7a5a;
-  --accent-weak: #eef4f1;
-  --warn: #b4452f;
-  --space: 24px;
+  /* --- 色：コーポレートグリーン（面ではなくアクセント） --- */
+  --green:      #154734;  /* Pantone 3435C 近似 */
+  --green-700:  #1e5c44;  /* ホバー用 */
+  --green-200:  #c9dad2;  /* 罫線 */
+  --green-100:  #dde7e2;
+  --green-050:  #eff4f1;  /* 面 */
+
+  /* --- 色：直しどころを示す暖色（責めない色として朱赤ではなく黄土） --- */
+  --amber:      #8a6220;
+  --amber-050:  #fbf6ec;
+  --clay:       #8c4634;  /* 「書き直しが必要」バッジのみ */
+
+  /* --- 色：無彩 --- */
+  --ink:        #262a28;  /* 本文（K90相当） */
+  --ink-mid:    #565c58;  /* 補足文 4.5:1以上 */
+  --line:       #e3e6e2;
+  --line-soft:  #eef0ed;
+  --ground:     #f7f7f4;  /* 生成り */
+  --panel:      #ffffff;
+
+  /* --- 余白（4pxの倍数） --- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 40px; --s-8: 56px;
+
+  /* --- 形 --- */
+  --r-s: 4px;
+  --r-m: 8px;
+  --shadow: 0 1px 2px rgba(21, 71, 52, 0.04), 0 8px 24px rgba(21, 71, 52, 0.05);
+
+  /* --- 書体 --- */
+  --font-sans: "Noto Sans JP", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-serif: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+
+  /* --- 版面 --- */
+  --page: 1120px;
+  --gutter: var(--s-5);
 }
 
 * { box-sizing: border-box; }
+
+/* app.js は hidden 属性で表示を切り替える。
+   .empty などに display を指定しているので、hidden を必ず優先させる */
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
   background: var(--ground);
   color: var(--ink);
-  font-family: "Noto Sans JP", "Yu Gothic", sans-serif;
-  font-size: 15px;
+  font-family: var(--font-sans);
+  font-size: 16px;
   line-height: 1.8;
+  font-feature-settings: "palt" 1;
+  /* 画面上端のコーポレートグリーンの細帯（ブランドの手掛かり） */
+  border-top: 4px solid var(--green);
 }
 
+/* --------------------------------------------------------------- ヘッダー */
+
 .header {
-  padding: 40px var(--space) 28px;
-  max-width: 1080px;
+  max-width: var(--page);
   margin: 0 auto;
+  padding: var(--s-7) var(--gutter) var(--s-6);
 }
 
 .header h1 {
-  margin: 0 0 8px;
-  font-size: 26px;
+  margin: 0 0 var(--s-3);
+  font-family: var(--font-serif);
+  font-size: 28px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
 }
 
 .lead {
   margin: 0;
-  color: var(--ink-light);
+  max-width: 46em;
+  color: var(--ink-mid);
+  font-size: 15px;
+  line-height: 1.9;
 }
 
+/* ------------------------------------------------------------- レイアウト */
+
 .layout {
-  max-width: 1080px;
+  max-width: var(--page);
   margin: 0 auto;
-  padding: 0 var(--space) 48px;
+  padding: 0 var(--gutter) var(--s-8);
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--s-5);
   align-items: start;
 }
 
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 4px;
-  padding: 28px;
+  border-radius: var(--r-m);
+  padding: var(--s-6);
 }
 
+/* 結果は長くなるので、入力側は追従させて常に手の届くところに置く */
+.panel-input { position: sticky; top: var(--s-5); }
+
+.panel-result { box-shadow: var(--shadow); }
+
+/* パネル見出し（ラベル的に小さく） */
 .panel h2 {
-  margin: 0 0 20px;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--ink-light);
-}
-
-.panel h3 {
-  margin: 28px 0 12px;
+  margin: 0 0 var(--s-5);
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
+  color: var(--ink-mid);
 }
+
+/* 結果内のブロック見出し */
+.panel h3 {
+  margin: 0 0 var(--s-4);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ 入力 */
 
 .field-group {
   border: none;
-  margin: 0 0 20px;
+  margin: 0 0 var(--s-5);
   padding: 0;
+  min-width: 0;
 }
 
 .field-group legend {
   padding: 0;
-  margin-bottom: 12px;
+  margin-bottom: var(--s-3);
   font-size: 13px;
-  color: var(--ink-light);
+  letter-spacing: 0.04em;
+  color: var(--ink-mid);
 }
 
-.field { display: block; margin-bottom: 16px; }
-.field-label { display: block; font-size: 13px; margin-bottom: 6px; }
-.field-row { display: flex; gap: 12px; }
-.field-row .field { flex: 1; }
+/* min-width: 0 を入れないと、input の既定サイズ（size=20相当）で
+   狭い画面のときに横スクロールが出る */
+.field { display: block; min-width: 0; margin-bottom: var(--s-4); }
+.field:last-child { margin-bottom: 0; }
+
+.field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  margin-bottom: var(--s-2);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+.field-row .field { margin-bottom: 0; }
+
+.field-draft { margin-top: var(--s-5); }
 
 input[type="text"], textarea {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 3px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px var(--s-3);
+  border: 1px solid #d5d9d4;
+  border-radius: var(--r-s);
   font-family: inherit;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.7;
   color: inherit;
   background: #fff;
 }
 
-input[type="text"]:focus, textarea:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
+input[type="text"]::placeholder, textarea::placeholder {
+  color: #8b918c;
 }
 
-textarea { resize: vertical; }
+input[type="text"]:hover, textarea:hover { border-color: #b9c0b9; }
 
-.actions { display: flex; gap: 10px; margin-top: 20px; }
+input[type="text"]:focus, textarea:focus {
+  outline: 2px solid var(--green);
+  outline-offset: 1px;
+  border-color: var(--green);
+}
+
+textarea { resize: vertical; min-height: 152px; }
+
+/* ------------------------------------------------------------- ボタン */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-5);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--line-soft);
+}
 
 .button {
-  padding: 10px 20px;
-  border: 1px solid var(--line);
-  border-radius: 3px;
+  min-height: 44px;
+  padding: 0 var(--s-4);
+  border: 1px solid #d5d9d4;
+  border-radius: var(--r-s);
   background: #fff;
+  color: var(--ink);
   font-family: inherit;
   font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
 }
 
-.button:hover { border-color: var(--ink-light); }
+.button:hover { background: #f4f6f4; border-color: #b9c0b9; }
+.button:active { background: #ebeeec; }
 
+.button:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* 主ボタンは画面に1つだけ */
 .button-primary {
-  background: var(--accent);
-  border-color: var(--accent);
+  padding: 0 var(--s-6);
+  background: var(--green);
+  border-color: var(--green);
   color: #fff;
+  font-weight: 600;
+  margin-right: var(--s-2);
 }
 
-.button-primary:hover { opacity: 0.9; }
+.button-primary:hover { background: var(--green-700); border-color: var(--green-700); }
+.button-primary:active { background: #123c2c; border-color: #123c2c; }
 
-.empty { color: var(--ink-light); padding: 32px 0; }
+/* ------------------------------------------------------------ 未診断の状態 */
+
+.empty {
+  margin: 0;
+  min-height: 176px;
+  display: grid;
+  place-content: center;
+  align-content: center;
+  padding: var(--s-6) var(--s-5);
+  border: 1px dashed var(--green-200);
+  border-radius: var(--r-m);
+  background: var(--green-050);
+  color: var(--ink-mid);
+  font-size: 15px;
+  text-align: center;
+}
+
+.empty::before {
+  content: "";
+  display: block;
+  width: 32px;
+  height: 2px;
+  margin: 0 auto var(--s-4);
+  background: var(--green);
+  opacity: .5;
+}
+
+/* ---------------------------------------------------------------- 判定 */
 
 .verdict {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 20px;
-  background: var(--accent-weak);
-  border-radius: 4px;
+  gap: var(--s-5);
+  padding: var(--s-5);
+  background: var(--green-050);
+  border: 1px solid var(--green-100);
+  border-radius: var(--r-m);
 }
 
-.score { font-size: 38px; font-weight: 600; line-height: 1; }
-.score-max { font-size: 16px; color: var(--ink-light); }
-.verdict-text p { margin: 6px 0 0; font-size: 13px; color: var(--ink-light); }
+.score {
+  flex: none;
+  font-family: var(--font-serif);
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-max {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink-mid);
+  letter-spacing: 0;
+}
+
+.verdict-text { min-width: 0; }
+
+.verdict-text p {
+  margin: var(--s-2) 0 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink-mid);
+}
 
 .badge {
   display: inline-block;
-  padding: 3px 12px;
+  padding: 2px var(--s-3);
   border-radius: 999px;
-  font-size: 13px;
   background: #fff;
   border: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
-.badge-pass { border-color: var(--accent); color: var(--accent); }
-.badge-near { border-color: #c08a2e; color: #c08a2e; }
-.badge-weak { border-color: var(--warn); color: var(--warn); }
+.badge-pass { border-color: var(--green); color: var(--green); }
+.badge-near { border-color: var(--amber); color: var(--amber); }
+.badge-weak { border-color: var(--clay); color: var(--clay); }
+
+/* -------------------------------------------------------- 結果内のブロック */
+
+.block { margin-top: var(--s-7); }
+
+/* 主役の「上長から見た指摘」だけ、間を広く取って独立させる */
+.block-comments {
+  margin-top: var(--s-8);
+  padding-left: var(--s-4);
+  border-left: 3px solid var(--green);
+}
+
+.block-comments h3 { margin-bottom: var(--s-4); }
+
+/* ------------------------------------------------------ 上長から見た指摘 */
+
+.comments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: comment;
+  display: grid;
+  gap: var(--s-3);
+}
+
+.comment {
+  position: relative;
+  padding: var(--s-4) var(--s-4) var(--s-4) 52px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--r-s);
+  background: var(--amber-050);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.comment::before {
+  counter-increment: comment;
+  content: counter(comment);
+  position: absolute;
+  left: var(--s-4);
+  top: 18px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ［S 具体的］のような印。本文から切り離して小さく添える */
+.comment-tag {
+  display: inline-block;
+  margin: 0 var(--s-2) 2px 0;
+  padding: 0 var(--s-2);
+  border-radius: var(--r-s);
+  background: #fff;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  vertical-align: 2px;
+}
+
+/* 良い点は緑＋チェック。色だけに頼らずマークでも区別する */
+.comment-praise {
+  border-left-color: var(--green);
+  background: var(--green-050);
+}
+
+.comment-praise::before {
+  counter-increment: none;
+  content: "✓";
+  border-color: var(--green);
+  color: var(--green);
+  font-size: 13px;
+}
+
+/* ------------------------------------------------------------ 書き直しの型 */
+
+.block-skeleton .skeleton {
+  margin: 0;
+  padding: var(--s-5);
+  border: 1px solid var(--green-200);
+  border-radius: var(--r-m);
+  background: #fff;
+  font-size: 15px;
+  line-height: 2.2;
+}
+
+/* 〈　〉は自分で埋める枠。埋める場所だと一目で分かるようにする */
+.slot {
+  display: inline-block;
+  margin: 0 1px;
+  padding: 0 var(--s-2);
+  border-bottom: 2px solid var(--green-200);
+  background: var(--green-050);
+  color: var(--green);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.note {
+  margin: var(--s-3) 0 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-mid);
+}
+
+/* ---------------------------------------------------------------- 観点別 */
+
+.block-axes { margin-top: var(--s-7); }
 
 .axes { list-style: none; margin: 0; padding: 0; }
 
 .axis {
   display: grid;
-  grid-template-columns: 88px auto 24px;
+  grid-template-columns: 104px 1fr auto;
   align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
+  gap: var(--s-1) var(--s-3);
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--line-soft);
 }
 
-.axis-name { font-size: 14px; }
-.axis-meter { display: flex; gap: 4px; }
+.axis:first-child { border-top: none; padding-top: 0; }
+
+.axis-name { font-size: 14px; font-weight: 500; }
+
+.axis-meter { display: flex; gap: 5px; }
 
 .dot {
-  width: 12px; height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: #ececea;
+  background: #e6e9e5;
 }
 
-.dot-on { background: var(--accent); }
-.axis-weak .dot-on { background: var(--warn); }
-.axis-score { text-align: right; font-size: 14px; color: var(--ink-light); }
+.dot-on { background: var(--green); }
+.axis-weak .dot-on { background: var(--amber); }
+
+.axis-score {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-mid);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 16px;
+}
+
+.axis-weak .axis-score { color: var(--amber); }
 
 .axis-hint {
   grid-column: 1 / -1;
-  font-size: 12px;
-  color: var(--ink-light);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-mid);
 }
 
-.comments { list-style: none; margin: 0; padding: 0; }
-
-.comment {
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  background: #fdfaf5;
-  border-left: 3px solid #d8c9a8;
-  font-size: 14px;
-}
-
-.comment-praise {
-  background: var(--accent-weak);
-  border-left-color: var(--accent);
-}
-
-.skeleton {
-  padding: 14px;
-  background: #f4f6f5;
-  border-radius: 3px;
-  font-size: 14px;
-  margin: 0;
-}
-
-.note { font-size: 12px; color: var(--ink-light); margin: 8px 0 0; }
+/* ---------------------------------------------------------------- フッター */
 
 .footer {
-  max-width: 1080px;
+  max-width: var(--page);
   margin: 0 auto;
-  padding: 0 var(--space) 40px;
-  font-size: 12px;
-  color: var(--ink-light);
+  padding: var(--s-5) var(--gutter) var(--s-7);
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-mid);
 }
 
-@media (max-width: 820px) {
+.footer p { margin: 0; letter-spacing: 0.06em; }
+
+/* ------------------------------------------------------------- 画面幅対応 */
+
+@media (max-width: 960px) {
   .layout { grid-template-columns: 1fr; }
-  .field-row { flex-direction: column; }
+  .panel-input { position: static; }
+}
+
+@media (max-width: 600px) {
+  :root { --gutter: 16px; }
+
+  body { font-size: 15px; }
+
+  .header { padding: var(--s-6) var(--gutter) var(--s-5); }
+  .header h1 { font-size: 23px; }
+  .lead { font-size: 14px; }
+
+  .layout { padding-bottom: var(--s-7); gap: var(--s-4); }
+  .panel { padding: var(--s-5) var(--s-4); }
+
+  .panel h3 { font-size: 17px; }
+
+  .field-row { gap: var(--s-2); }
+
+  .actions { gap: var(--s-2); }
+  .button { flex: 1 1 auto; padding: 0 var(--s-3); }
+  .button-primary { flex: 1 1 100%; margin-right: 0; }
+
+  .verdict {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-3);
+    padding: var(--s-4);
+  }
+  .score { font-size: 38px; }
+
+  .block { margin-top: var(--s-6); }
+  .block-comments { margin-top: var(--s-7); padding-left: var(--s-3); }
+
+  .comment { padding: var(--s-3) var(--s-3) var(--s-3) 44px; font-size: 14.5px; }
+  .comment::before { left: var(--s-3); top: 14px; }
+
+  .block-skeleton .skeleton { padding: var(--s-4); font-size: 14.5px; line-height: 2; }
+
+  /* 狭い画面では枠が1行ずつ改行されて読みにくいので、枠の中でも折り返す */
+  .slot {
+    display: inline;
+    white-space: normal;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .empty { min-height: 144px; }
+
+  .axis { grid-template-columns: 1fr auto; }
+  .axis-meter { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
 }

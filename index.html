@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>コンピテンシー目標ナビ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600&family=Noto+Serif+JP:wght@500;600&display=swap">
 <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
@@ -15,7 +18,7 @@
 
 <main class="layout">
 
-  <section class="panel" aria-labelledby="input-heading">
+  <section class="panel panel-input" aria-labelledby="input-heading">
     <h2 id="input-heading">入力</h2>
 
     <fieldset class="field-group">
@@ -42,7 +45,7 @@
       </div>
     </fieldset>
 
-    <label class="field">
+    <label class="field field-draft">
       <span class="field-label">自分で書いた行動目標</span>
       <textarea id="draft" rows="6" placeholder="例）実施後レビューを忘れないように、期限をしっかり守ってやるようにします。"></textarea>
     </label>
@@ -54,7 +57,7 @@
     </div>
   </section>
 
-  <section class="panel" aria-labelledby="result-heading">
+  <section class="panel panel-result" aria-labelledby="result-heading">
     <h2 id="result-heading">診断結果</h2>
 
     <div id="empty" class="empty">
@@ -72,15 +75,21 @@
         </div>
       </div>
 
-      <h3>観点別</h3>
-      <ul id="axes" class="axes"></ul>
+      <div class="block block-comments">
+        <h3>上長から見た指摘</h3>
+        <ul id="comments" class="comments"></ul>
+      </div>
 
-      <h3>上長から見た指摘</h3>
-      <ul id="comments" class="comments"></ul>
+      <div class="block block-skeleton">
+        <h3>書き直しの型</h3>
+        <p class="skeleton" id="skeleton"></p>
+        <p class="note">〈　〉の中を自分の仕事の言葉で埋めると、合格水準の形になります。</p>
+      </div>
 
-      <h3>書き直しの型</h3>
-      <p class="skeleton" id="skeleton"></p>
-      <p class="note">〈　〉の中を自分の仕事の言葉で埋めると、合格水準の形になります。</p>
+      <div class="block block-axes">
+        <h3>観点別</h3>
+        <ul id="axes" class="axes"></ul>
+      </div>
     </div>
   </section>
 

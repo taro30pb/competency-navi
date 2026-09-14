@@ -59,6 +59,23 @@
     });
   }
 
+  /**
+   * 指摘文の見せ方だけを整える（文面そのものは advice.js のまま）。
+   * 先頭の［S 具体的］のような印は、本文と切り離して小さく添える。
+   */
+  function fillComment(li, text) {
+    const head = /^［([^］]*)］/.exec(text);
+    if (!head) {
+      li.textContent = text;
+      return;
+    }
+    const tag = document.createElement('span');
+    tag.className = 'comment-tag';
+    tag.textContent = head[1];
+    li.appendChild(tag);
+    li.appendChild(document.createTextNode(text.slice(head[0].length)));
+  }
+
   function renderComments(advice) {
     const list = el('comments');
     list.innerHTML = '';
@@ -66,14 +83,14 @@
     if (advice.praise) {
       const li = document.createElement('li');
       li.className = 'comment comment-praise';
-      li.textContent = advice.praise;
+      fillComment(li, advice.praise);
       list.appendChild(li);
     }
 
     advice.comments.forEach(function (text) {
       const li = document.createElement('li');
       li.className = 'comment';
-      li.textContent = text;
+      fillComment(li, text);
       list.appendChild(li);
     });
 
@@ -83,6 +100,26 @@
       li.textContent = '指摘はありません。このまま提出できます。';
       list.appendChild(li);
     }
+  }
+
+  /**
+   * 書き直しの型。〈　〉は自分で埋める枠なので、枠として見えるようにする。
+   * 文面は advice.js の buildSkeleton() のまま。
+   */
+  function renderSkeleton(text) {
+    const box = el('skeleton');
+    box.textContent = '';
+    text.split(/(〈[^〉]*〉)/).forEach(function (part) {
+      if (part === '') return;
+      if (part.charAt(0) === '〈') {
+        const slot = document.createElement('span');
+        slot.className = 'slot';
+        slot.textContent = part;
+        box.appendChild(slot);
+      } else {
+        box.appendChild(document.createTextNode(part));
+      }
+    });
   }
 
   function run() {
@@ -106,7 +143,7 @@
 
     renderAxes(result.axes);
     renderComments(advice);
-    el('skeleton').textContent = buildSkeleton(result, mbo);
+    renderSkeleton(buildSkeleton(result, mbo));
 
     el('empty').hidden = true;
     el('result').hidden = false;
