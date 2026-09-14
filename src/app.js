@@ -87,13 +87,13 @@
   function selectedCompetency() {
     const code = el('competency').value;
     if (!code) return null;
-    const found = master.filter(function (it) { return it.code === code; })[0];
-    if (found) return found;
+    // 割当データ側を先に探す。評価者からのメッセージ（選定理由）が入っているため。
     let hit = null;
     assignments.forEach(function (g) {
-      g.items.forEach(function (it) { if (it.code === code) hit = it; });
+      g.items.forEach(function (it) { if (it.code === code && !hit) hit = it; });
     });
-    return hit;
+    if (hit) return hit;
+    return master.filter(function (it) { return it.code === code; })[0] || null;
   }
 
   function showDefinition() {
@@ -105,6 +105,11 @@
     }
     box.textContent = item.name + '　—　' + (item.definition || '');
     box.hidden = false;
+
+    // 選定理由は、なぜこの項目を選んだかという評価者からのメッセージ。
+    // どう書けば評価されるかの手がかりになるので、書く前に読んでもらう。
+    el('competency-message').textContent = item.message || '';
+    el('competency-message-box').hidden = !item.message;
   }
 
   /**

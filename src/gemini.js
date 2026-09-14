@@ -24,6 +24,10 @@ function buildPrompt(input) {
     ? input.competency.code + ' ' + input.competency.name + '（' + input.competency.definition + '）'
     : '（本人が選んでいない）';
 
+  const message = (input.competency && input.competency.message)
+    ? input.competency.message
+    : '';
+
   return [
     'あなたは組織開発と人事評価の専門家で、コンピテンシー評価（行動特性評価）のスペシャリストです。',
     'グリーンライフ産業株式会社の社員が書いた行動目標の原案を、上司が期末に客観的に確認でき、',
@@ -33,6 +37,9 @@ function buildPrompt(input) {
     'コンピテンシー項目：' + competency,
     '所属・職位：' + (input.role || '（選んでいない）'),
     '本人が書いた原案：' + input.draft,
+    message ? '' : null,
+    message ? 'この項目が選ばれた理由（評価者から社員へのメッセージ。改善案はこの意図に沿わせること）：' : null,
+    message ? message : null,
     '',
     '# この会社の評価の進み方（改善案はこの周期に合わせること）',
     '- 上長による評価は3か月ごと（四半期ごと）に行われる。目標は3か月で達成しきれる粒度にする。',

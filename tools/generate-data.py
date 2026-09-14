@@ -113,6 +113,11 @@ def build_assignments(z):
         if not groups or groups[-1]['key'] != key:
             groups.append({'key': key, 'group': group, 'division': division, 'role': role, 'items': []})
         item = {'code': code, 'name': name, 'definition': cells.get(5, '')}
+        # 選定理由は「なぜこの項目を選んだか」という評価者からのメッセージ。
+        # どう書けば評価されるかの手がかりになるので取り込む（社内限定のファイル側）。
+        message = cells.get(6, '')
+        if message:
+            item['message'] = message
         if note:
             item['note'] = note
         groups[-1]['items'].append(item)

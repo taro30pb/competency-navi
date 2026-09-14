@@ -871,3 +871,21 @@ textarea { resize: vertical; min-height: 132px; }
   line-height: 18px;
   color: var(--ink-light);
 }
+
+/* この項目が選ばれた理由（評価者からのメッセージ） */
+.message { margin: -4px 0 0; }
+
+.message > summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--accent);
+  padding: 4px 0;
+}
+
+.message p {
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  background: var(--accent-weak);
+  font-size: 12px;
+  line-height: 1.9;
+}
