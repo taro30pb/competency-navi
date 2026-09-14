@@ -889,3 +889,6 @@ textarea { resize: vertical; min-height: 132px; }
   font-size: 12px;
   line-height: 1.9;
 }
+
+/* 段階が作れなかったときの注記 */
+.levels-note { color: var(--ink-light); }

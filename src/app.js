@@ -386,7 +386,17 @@
     const list = el('levels-list');
     list.innerHTML = '';
     if (!levels || levels.length === 0) {
-      box.hidden = true;
+      // 件数で測りにくい項目では、AIが段階を作らずに理由だけ返すことがある
+      if (indicator) {
+        el('levels-indicator').textContent = '';
+        const li = document.createElement('li');
+        li.className = 'levels-note';
+        li.textContent = indicator;
+        list.appendChild(li);
+        box.hidden = false;
+      } else {
+        box.hidden = true;
+      }
       return;
     }
     el('levels-indicator').textContent = indicator ? '（' + indicator + '）' : '';
