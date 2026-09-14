@@ -795,3 +795,10 @@ textarea { resize: vertical; min-height: 132px; }
 }
 
 .skeleton-box[open] > summary { margin-bottom: 8px; }
+
+/* 改善案を評価シートへ写すためのボタン */
+.button-small {
+  margin-left: 10px;
+  padding: 4px 12px;
+  font-size: 12px;
+}

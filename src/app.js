@@ -267,6 +267,37 @@
   fillRoles();
   fillCompetencies();
 
+  /**
+   * 改善案を写し取る。評価シートへ貼るための機能なので、
+   * 使えない環境（古いブラウザ、クリップボードが塞がれている場合）でも
+   * 文章を選択状態にして、手で写せるところまでは面倒を見る。
+   */
+  el('copy').addEventListener('click', function () {
+    const text = el('improve-text').textContent;
+    const done = function () {
+      const button = el('copy');
+      button.textContent = 'コピーしました';
+      setTimeout(function () { button.textContent = 'コピー'; }, 1800);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, selectText);
+    } else {
+      selectText();
+    }
+  });
+
+  /** クリップボードが使えないときは、せめて選択状態にする */
+  function selectText() {
+    const range = document.createRange();
+    range.selectNodeContents(el('improve-text'));
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    el('copy').textContent = '選択しました（Ctrl+C）';
+    setTimeout(function () { el('copy').textContent = 'コピー'; }, 2400);
+  }
+
   el('run').addEventListener('click', run);
   el('sample').addEventListener('click', fillSample);
 
