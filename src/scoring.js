@@ -170,7 +170,7 @@ function scoreDraft(draft, mbo) {
   const evidence = findWords(text, EVIDENCE_WORDS);
   const deadlines = findWords(text, DEADLINE_WORDS);
   // 「Q3」「第3四半期」「上期」のような区切りも期限として数える
-  const quarterPattern = toHalfWidth(text).match(/Q[1-4]|第[1-4]四半期|上期|下期/g) || [];
+  const quarterPattern = toHalfWidth(text).match(/Q[1-4]|第?[1-4]Q|第[1-4]四半期|上期|下期/g) || [];
   quarterPattern.forEach(function (v) { if (deadlines.indexOf(v) === -1) deadlines.push(v); });
   const frequencies = findWords(text, FREQUENCY_WORDS);
   // 「月2回」「週1回」「年4回」のような書き方も頻度として数える
@@ -238,7 +238,7 @@ function scoreDraft(draft, mbo) {
   axis('timing', '期限・頻度', 'T', 'どのくらいの頻度で、いつまでに、が決まっているか', [
     frequencies.length + deadlines.length >= 1,
     frequencies.length >= 1,                         // 繰り返す行動として決まっている
-    /([月火水木金土日]曜|月末|週末|期末|\d+日までに|毎月\d+日|\d+日(まで|時点)|Q[1-4]|第[1-4]四半期)/.test(toHalfWidth(text)),  // 曜日・日付・四半期まで決まっている
+    /([月火水木金土日]曜|月末|週末|期末|\d+日までに|毎月\d+日|\d+日(まで|時点)|Q[1-4]|第?[1-4]Q|第[1-4]四半期)/.test(toHalfWidth(text)),  // 曜日・日付・四半期まで決まっている
     frequencies.length + deadlines.length >= 3,
   ]);
 

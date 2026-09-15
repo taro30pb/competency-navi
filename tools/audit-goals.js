@@ -35,44 +35,47 @@ const rows = goals.map(function (g) {
   };
 });
 
-// 上長の評点は4点満点、アプリは5点満点なので、同じ尺度に直して比べる
-function toFive(fourPoint) {
-  return fourPoint === null ? null : Math.round(((fourPoint - 1) / 3 * 4 + 1) * 10) / 10;
-}
+// 上長の評点とアプリの採点は、測っているものが違うので比べない。
+// 上長の評点は期末に「やったかどうか」、アプリは期初の「目標文の書き方」。
+// この道具の役目は、拾えなかった言い回しを見つけることにある。
 
-console.log('■ 上長の評点と、アプリの採点');
+console.log('■ 実際に書かれた目標の採点');
+console.log('  （上長の評点は期末の成果で決まるため、並べても比べるものではありません）');
 console.log('');
-console.log('  評点  換算  アプリ  差    項目');
+console.log('  アプリ  上長   何も拾えなかった観点            項目');
 
-let gaps = [];
+const blind = { specificity: 0, quantity: 0, method: 0, timing: 0, followup: 0 };
+
 rows.forEach(function (r) {
-  const converted = toFive(r.actual);
-  const diff = converted === null ? null : Math.round((r.app - converted) * 10) / 10;
+  const empty = r.axes.filter(function (a) { return a.score === 1; });
+  empty.forEach(function (a) { blind[a.key] = (blind[a.key] || 0) + 1; });
   console.log('  '
-    + (r.actual === null ? ' — ' : r.actual.toFixed(1)).padStart(4)
-    + (converted === null ? '   — ' : converted.toFixed(1).padStart(6))
-    + r.app.toFixed(1).padStart(8)
-    + (diff === null ? '     —' : (diff > 0 ? '+' : '') + diff.toFixed(1)).padStart(7)
-    + '   ' + r.item.slice(0, 22));
-  if (diff !== null && diff <= -1.0) gaps.push({ row: r, diff: diff });
+    + r.app.toFixed(1).padStart(5)
+    + (r.actual === null ? '     —' : (r.actual.toFixed(1) + '/4').padStart(7))
+    + '   ' + (empty.map(function (a) { return a.label; }).join('・') || '（なし）').padEnd(28)
+    + ' ' + r.item.slice(0, 20));
 });
 
 console.log('');
-if (gaps.length === 0) {
-  console.log('上長の評点より大きく低く出たものはありません。');
-} else {
-  console.log('■ 上長の評点よりアプリが1点以上低く出たもの（' + gaps.length + '件）');
-  console.log('  ここに語彙の穴か、基準のずれが隠れている可能性があります。');
-  gaps.sort(function (a, b) { return a.diff - b.diff; });
-  gaps.forEach(function (g) {
-    const r = g.row;
-    console.log('');
-    console.log('  ● ' + r.item + '　上長 ' + r.actual + '/4 → アプリ ' + r.app + '/5（差 ' + g.diff + '）');
-    console.log('    ' + r.goal.slice(0, 76) + '…');
-    console.log('    弱い観点: ' + r.axes.filter(function (a) { return a.score !== null && a.score <= 2; })
-      .map(function (a) { return a.label; }).join('・') || '（なし）');
-    console.log('    拾えた数量: ' + (r.detected.quantities.join('／') || 'なし'));
-    console.log('    拾えた行動: ' + (r.detected.actions.join('／') || 'なし'));
-    console.log('    曖昧な語  : ' + (r.detected.vague.join('／') || 'なし'));
-  });
-}
+console.log('■ 観点ごとに「何も拾えなかった」件数（全' + rows.length + '件中）');
+console.log('  件数が多い観点ほど、語彙が足りていない可能性があります。');
+console.log('');
+const labels = { specificity: 'S 具体性', quantity: 'M 定量性', method: 'A 手段', timing: 'T 期限・頻度', followup: '＋ 報告・振返り' };
+Object.keys(blind).forEach(function (k) {
+  console.log('  ' + labels[k].padEnd(16) + String(blind[k]).padStart(3) + '件');
+});
+
+console.log('');
+console.log('■ 一度も拾えなかった目標の中身（語彙の穴を探す手がかり）');
+
+rows.filter(function (r) {
+  return r.axes.filter(function (a) { return a.score === 1; }).length >= 2;
+}).forEach(function (r) {
+  console.log('');
+  console.log('  ● ' + r.item + '（アプリ ' + r.app + '/5）');
+  console.log('    ' + r.goal.slice(0, 76) + '…');
+  console.log('    拾えた数量: ' + (r.detected.quantities.join('／') || 'なし'));
+  console.log('    拾えた行動: ' + (r.detected.actions.join('／') || 'なし'));
+  console.log('    拾えた頻度: ' + (r.detected.frequencies.concat(r.detected.deadlines).join('／') || 'なし'));
+  console.log('    NGワード  : ' + (r.detected.vague.join('／') || 'なし'));
+});
