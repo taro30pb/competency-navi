@@ -102,6 +102,11 @@ def read_sheet(path):
         goal = cells.get(goal_col, '')
         score = cells.get(score_col, '') if score_col is not None else ''
         item = cells.get(item_col, '') if item_col is not None else ''
+        # 付与型の行は本人が目標を書かない（「目標設定入力不要」と入る）ので除く
+        if goal.startswith('目標設定入力不要'):
+            goal = re.sub(r'^目標設定入力不要\s*', '', goal)
+            if len(goal) < 10:
+                continue
         if goal and len(goal) >= 10:
             found.append({
                 'item': item,

@@ -35,7 +35,7 @@ const VAGUE_WORDS = [
   '適切に', '前向きに', '忘れないように', '喜んでもら', '満足してもら', '信頼される',
   // 意欲や希望にとどまる言い方
   'するようにしたい', 'したいと思', 'していきたい', 'ようにします', 'ようにしたい',
-  'したい', 'たいです', '順次', '追って', 'おいおい',
+  'したい', 'たいです', '順次', '追って', 'おいおい', '都度',
 ];
 
 /**
@@ -71,6 +71,9 @@ const ACTION_VERBS = [
   '構築', '導入', '整備', '展開', '運用', '開催', '周知', '改修', '標準化', '発信',
   'リリース', '検証', '測定', '教育', '指導', '同席', '手配', '交渉', '設計', '試作',
   '見直', '洗い出', '立案', '企画', '決定', '選定', '比較', '試算', '棚卸',
+  // 実際の目標文に出てきた行動の言葉（2026年第2Qの評価シート69件から）
+  '使用', '活用', '設置', '移行', '削減', '完遂', 'チェック', '確保', '紹介',
+  '計測', '撮影', '発表', '実践', '参照', '収集', '集約', '案内', '掲示', '掲載',
 ];
 
 /** 自分ではなく他人が動くことになっている言葉。達成可能性（A）を下げる */
@@ -94,11 +97,11 @@ const EVIDENCE_WORDS = [
 const SYSTEM_WORDS = ['一覧', 'チェックリスト', 'テンプレート', 'フォーム', 'ルール', '手順', '仕組み', '台帳', 'シート'];
 
 /** 期限を表す言葉 */
-const DEADLINE_WORDS = ['までに', '以内', '当日', '翌日', '翌週', '翌月', '期末', '月末', '週末', '上半期', '下半期', '今期', '年度内'];   // 「半期」は「四半期」に含まれてしまうので入れない
+const DEADLINE_WORDS = ['までに', '以内', '当日', '翌日', '翌週', '翌月', '期末', '月末', '週末', '上半期', '下半期', '今期', '年度内', '納期', '締切', '期日'];   // 「半期」は「四半期」に含まれてしまうので入れない
 
 /** 頻度を表す言葉 */
 // 「四半期」は入れない。「四半期末」という期限の言い方に含まれてしまうため
-const FREQUENCY_WORDS = ['毎日', '毎週', '毎月', '週次', '月次', '日次', '四半期ごと', '四半期に', '毎回', '隔週'];
+const FREQUENCY_WORDS = ['毎日', '毎週', '毎月', '週次', '月次', '日次', '四半期ごと', '四半期に', '毎回', '隔週', '日々', '常時'];
 
 /** 報告する「行為」を表す言葉 */
 const REPORT_WORDS = ['報告', '共有', '提出', '連絡', 'レビュー', '承認'];
@@ -170,11 +173,17 @@ function scoreDraft(draft, mbo) {
   const evidence = findWords(text, EVIDENCE_WORDS);
   const deadlines = findWords(text, DEADLINE_WORDS);
   // 「Q3」「第3四半期」「上期」のような区切りも期限として数える
-  const quarterPattern = toHalfWidth(text).match(/Q[1-4]|第?[1-4]Q|第[1-4]四半期|上期|下期/g) || [];
+  // 「Q3」「第2Q」「第一四半期」「6月末」「9月まで」のような書き方も期限として数える
+  const quarterPattern = toHalfWidth(text).match(
+    /Q[1-4]|第?[1-4]Q|第[1-4一二三四]四半期|[前今来]四半期|上期|下期|[0-9]{1,2}月[0-9]{1,2}日|[0-9]{1,2}月(末|中|まで|に|から)/g) || [];
   quarterPattern.forEach(function (v) { if (deadlines.indexOf(v) === -1) deadlines.push(v); });
   const frequencies = findWords(text, FREQUENCY_WORDS);
   // 「月2回」「週1回」「年4回」のような書き方も頻度として数える
-  const frequencyPattern = toHalfWidth(text).match(/(毎|各)?[日週月年]\s*(に)?\s*\d+\s*回|\d+\s*回\s*\/\s*[日週月年]/g) || [];
+  // 「毎週2回」「月に3回」「2週間に一回」「月1」のような書き方を頻度として数える。
+  // 「6月1日」を「月1」と読み違えないよう、後ろに「日」が続く場合は除く。
+  const half = toHalfWidth(text);
+  const frequencyPattern = (half.match(/(毎|各)?[0-9]?[日週月年]\s*(間)?\s*(に)?\s*[0-9一二三四五六七八九十]+\s*回/g) || [])
+    .concat(half.match(/[日週月年]\s*[0-9]+(?![0-9]*日)/g) || []);
   frequencyPattern.forEach(function (v) { if (frequencies.indexOf(v) === -1) frequencies.push(v); });
   const reports = findWords(text, REPORT_WORDS);
   const reportTargets = findWords(text, REPORT_TARGETS);
@@ -238,7 +247,7 @@ function scoreDraft(draft, mbo) {
   axis('timing', '期限・頻度', 'T', 'どのくらいの頻度で、いつまでに、が決まっているか', [
     frequencies.length + deadlines.length >= 1,
     frequencies.length >= 1,                         // 繰り返す行動として決まっている
-    /([月火水木金土日]曜|月末|週末|期末|\d+日までに|毎月\d+日|\d+日(まで|時点)|Q[1-4]|第?[1-4]Q|第[1-4]四半期)/.test(toHalfWidth(text)),  // 曜日・日付・四半期まで決まっている
+    /([月火水木金土日]曜|月末|週末|期末|\d+日までに|毎月\d+日|\d+日(まで|時点)|Q[1-4]|第?[1-4]Q|第[1-4一二三四]四半期|[0-9]{1,2}月[0-9]{1,2}日|[0-9]{1,2}月末)/.test(toHalfWidth(text)),  // 曜日・日付・四半期まで決まっている
     frequencies.length + deadlines.length >= 3,
   ]);
 
