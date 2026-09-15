@@ -379,6 +379,28 @@
       role: mbo.role,
       competency: mbo.competency,
     }).then(function (result) {
+      // AIが書いた文章をアプリの採点にかけ、足りない観点があれば一度だけ書き直させる。
+      // 採点の物差しを持っているのはこちらなので、それをAIに伝えたほうが早い。
+      const scored = scoreDraft(result.improved, mbo);
+      if (scored.total >= 4.0) return result;
+
+      const weak = scored.axes
+        .filter(function (a) { return a.score !== null && a.score <= 3; })
+        .map(function (a) { return a.label + '（' + a.hint + '）'; });
+      if (weak.length === 0) return result;
+
+      button.textContent = 'AIが書き直しています…';
+      const feedback = 'いま書いた改善案を当社の基準で採点したところ ' + scored.total.toFixed(1)
+        + ' 点（5点満点）でした。次の観点が足りていません：' + weak.join('、') + '。'
+        + 'これらを補って書き直してください。前の文章の良いところは残して構いません。'
+        + '前の改善案：' + result.improved;
+
+      return requestRewrite(storedKey(), {
+        draft: draft,
+        role: mbo.role,
+        competency: mbo.competency,
+      }, feedback).catch(function () { return result; });   // 書き直しに失敗したら最初の案を使う
+    }).then(function (result) {
       renderImprovement(result.improved, mbo, true, result.evidence);
       renderLevels(result.indicator, result.levels);
       if (result.relevance) setRelevance(result.relevance);

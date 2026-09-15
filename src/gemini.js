@@ -18,6 +18,21 @@ const GEMINI_MODEL = 'gemini-3.6-flash';
 
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
+/**
+ * AIに見せる手本を並べる。
+ * 手元に社内資料の良い例（data/examples.local.js）があればそれを使い、
+ * 無ければ汎用の手本を1つ使う。
+ */
+function exampleBlock() {
+  const examples = (typeof GOAL_EXAMPLES !== 'undefined' && GOAL_EXAMPLES.length > 0)
+    ? GOAL_EXAMPLES
+    : ['担当している20件の見積案件について、毎週金曜に進捗を一覧化して確認し、遅れている案件は'
+      + '当日中に対応方針を決める。月4件以上の改善提案を作成し、週次ミーティングで所長に報告して'
+      + '翌週の段取りを見直す。'];
+
+  return examples.map(function (text, i) { return '例' + (i + 1) + '：' + text; }).join('\n');
+}
+
 /** AIに渡す指示文を組み立てる */
 function buildPrompt(input) {
   const competency = input.competency
@@ -124,9 +139,7 @@ function buildPrompt(input) {
     '- 「毎週」「毎月」などの頻度を省かない。',
     '',
     '# 手本（この水準を目指す）',
-    '担当している20件の見積案件について、毎週金曜に進捗を一覧化して確認し、遅れている案件は',
-    '当日中に対応方針を決める。月4件以上の改善提案を作成し、週次ミーティングで所長に報告して',
-    '翌週の段取りを見直す。',
+    exampleBlock(),
     '',
     '# 書き終える前の自己点検',
     '次の3つを満たしているか確認し、欠けていれば書き直してから出力すること。',
@@ -153,6 +166,9 @@ function buildPrompt(input) {
     'indicator に「この目標は件数では測りにくいため、上長と基準を相談してください」と書くこと。',
     '数えられないものを数えたことにするのは、評価を歪めるので絶対にしない。',
     '',
+    input.feedback ? '# 書き直しの指示（重要）' : null,
+    input.feedback ? input.feedback : null,
+    input.feedback ? '' : null,
     '# 出力',
     '次のJSONだけを返してください。前置きや説明文は不要です。',
     '{',
@@ -236,10 +252,22 @@ function requestImprovement(key, input) {
   });
 }
 
+/**
+ * 書き直しを頼む。
+ * AIが書いた改善案をアプリの採点にかけ、足りない観点をそのまま伝えて直させる。
+ */
+function requestRewrite(key, input, feedback) {
+  const retry = {};
+  Object.keys(input).forEach(function (k) { retry[k] = input[k]; });
+  retry.feedback = feedback;
+  return requestImprovement(key, retry);
+}
+
 if (typeof module !== 'undefined') {
   module.exports = {
     askGemini: askGemini,
     requestImprovement: requestImprovement,
+    requestRewrite: requestRewrite,
     buildPrompt: buildPrompt,
     GEMINI_MODEL: GEMINI_MODEL,
   };
