@@ -17,14 +17,47 @@
  * 指摘の中で本人に確認してもらい、判定はAIにつないだ後に任せる。
  */
 
-/** 気持ち・態度を表すだけで、行動として測れない言葉 */
+/**
+ * NGワード。社内資料「①社員向け説明資料2026.1改定」のNGワード一覧に合わせている。
+ * 目標の達成度合いを評価者が判断できなくなる言葉。
+ */
+
+/** 心構え・意欲を表すだけで、行動になっていない言葉 */
 const VAGUE_WORDS = [
-  '頑張', 'がんば', 'しっかり', 'きちんと', 'ちゃんと', '努め', '心がけ', '心掛け',
-  '意識し', 'なるべく', 'できるだけ', '出来るだけ', '積極的に', '前向きに',
-  '極力', '努力', '注力', '推進し', '強化し',
-  '忘れないように', '丁寧に', 'スムーズに', '適切に', '随時', '適宜', '可能な限り',
-  '喜んでもら', '満足してもら', '信頼される', '迷惑をかけない', '気をつけ', '気を付け',
+  '努力', '努め', '徹底する', '目指す', '頑張', 'がんば', '気をつけ', '気を付け',
+  '注意する', '注力', '意識し', '留意', '目標とする', '心掛け', '心がけ', '一生懸命',
+  // 行動の範囲が不明確な言葉
+  '極力', '可能な限り', '可能であれば', '出来る限り', 'できる限り', '出来るだけ', 'できるだけ',
+  'なるべく', '必要に応じて', '許す限り', '最大限', 'ある程度',
+  // 人により受け取り方が異なる言葉
+  '積極的に', '定期的に', '強調して', '確実に', '臨機応変', '迅速に', '早急に', '常に',
+  '随時', '適宜', 'いつも', 'なんでも', 'こまめに', 'しっかり', '丁寧に', 'スムーズに',
+  '適切に', '前向きに', '忘れないように', '喜んでもら', '満足してもら', '信頼される',
+  // 意欲や希望にとどまる言い方
+  'するようにしたい', 'したいと思', 'していきたい', 'ようにします', 'ようにしたい',
 ];
+
+/**
+ * 達成したかどうかを外から見て判断しにくい動詞。
+ * 「本を読んでレポートを提出する」のように、可視化できる表現が伴えば問題ない。
+ * 行動としては数えず、指摘の材料にする。
+ */
+const WEAK_VERBS = [
+  '思う', '考える', '見る', '調べる', '読む', '検討', '考慮', '図る', '勘案',
+  '向上する', '推進', '効率化', '明確化', '安定化', '共有化', '強化',
+];
+
+/**
+ * その事象が起きないと達成できない書き方。
+ * 発生頻度が低いと評価できないため、社内資料ではNGとされている。
+ */
+const CONDITIONAL_WORDS = ['場合は', '場合には', 'ときは', '次第で', 'になったら', 'が発生したら', 'が出たら'];
+
+/** 業務時間外を指す言葉。評価者が達成度合いを判断できない */
+const OFF_HOURS_WORDS = ['夜寝る前', '休日に', '出勤途中', '残業してでも', '帰宅後'];
+
+/** 範囲をあいまいにする言葉 */
+const OPEN_ENDED_WORDS = ['など', '等', 'etc'];
 
 /** 成果（結果）を表す言葉。行動に分解されていないと減点対象になる */
 const OUTCOME_WORDS = ['率', '売上', '受注高', '粗利', '利益', '実績', 'シェア'];
@@ -35,12 +68,16 @@ const ACTION_VERBS = [
   '連絡', '点検', '登録', '設定', '依頼', '同行', '説明', '集計', '分析', '整理',
   '配布', 'レビュー', '面談', '架電', '送付', '入力', '更新', '見積', '発注', '巡回',
   '構築', '導入', '整備', '展開', '運用', '開催', '周知', '改修', '標準化', '発信',
-  'リリース', '検証', '測定', '教育', '指導', '同席', '手配', '交渉', '調整', '設計', '試作',
-  '見直', '洗い出', '立案', '企画', '検討', '決定', '選定', '比較', '試算', '棚卸',
+  'リリース', '検証', '測定', '教育', '指導', '同席', '手配', '交渉', '設計', '試作',
+  '見直', '洗い出', '立案', '企画', '決定', '選定', '比較', '試算', '棚卸',
 ];
 
 /** 自分ではなく他人が動くことになっている言葉。達成可能性（A）を下げる */
-const DEPENDENT_WORDS = ['してもらう', 'してもらえ', 'いただく', 'させる', '会社が', '上司が', '上長が', '他部署が', '誰かが'];
+const DEPENDENT_WORDS = [
+  'してもらう', 'してもらえ', 'していただ', 'やらせる', 'やらせてもら',
+  '支援する', '助言する', '協力する', '調整する',
+  '会社が', '上司が', '上長が', '他部署が', '誰かが',
+];
 
 /**
  * 上司が目で確認できる事実を表す言葉。
@@ -136,7 +173,7 @@ function scoreDraft(draft, mbo) {
   quarterPattern.forEach(function (v) { if (deadlines.indexOf(v) === -1) deadlines.push(v); });
   const frequencies = findWords(text, FREQUENCY_WORDS);
   // 「月2回」「週1回」「年4回」のような書き方も頻度として数える
-  const frequencyPattern = toHalfWidth(text).match(/(毎|各)?[日週月年]\s*\d+\s*回|\d+\s*回\s*\/\s*[日週月年]/g) || [];
+  const frequencyPattern = toHalfWidth(text).match(/(毎|各)?[日週月年]\s*(に)?\s*\d+\s*回|\d+\s*回\s*\/\s*[日週月年]/g) || [];
   frequencyPattern.forEach(function (v) { if (frequencies.indexOf(v) === -1) frequencies.push(v); });
   const reports = findWords(text, REPORT_WORDS);
   const reportTargets = findWords(text, REPORT_TARGETS);
@@ -144,6 +181,10 @@ function scoreDraft(draft, mbo) {
   const outcomes = findWords(text, OUTCOME_WORDS);
   const dependents = findWords(text, DEPENDENT_WORDS);
   const quantities = findQuantities(text);
+  const weakVerbs = findWords(text, WEAK_VERBS);
+  const conditionals = findWords(text, CONDITIONAL_WORDS);
+  const offHours = findWords(text, OFF_HOURS_WORDS);
+  const openEnded = findWords(text, OPEN_ENDED_WORDS);
 
   // 観点ごとに4つの条件を見て、満たした数＋1を点数とする（1〜5点）。
   const axes = [];
@@ -155,12 +196,15 @@ function scoreDraft(draft, mbo) {
   }
 
   // ① 具体性（S 具体的）
-  axis('specificity', '具体性', 'S', '誰の・何を・どの場面で、が読んで分かるか', [
+  axis('specificity', '具体性', 'S', '誰の・何を、どれだけの分量で書けているか', [
     /担当|自分|私|チーム|部署|部門|課|店舗|全店|現場|顧客|お客様|お客さま|施主|案件|物件|会員|生徒|利用者|社内|全社|社員|スタッフ|メンバー|後輩|部下|協力会社|職人|商品|製品|工法|施工|工事|見積|図面/.test(text),
-    /(の(時|際|とき)|場合|してから|を受け|があったら|が出たら|次第|タイミング|に合わせて|当日|翌日)/.test(text),
+    text.replace(/\s/g, '').length >= 60,   // 社内資料の目安は100文字程度。20〜30文字では足りない
     vague.length === 0,
-    quantities.length >= 1,          // 対象の規模が数で示されている
-  ]);
+    quantities.length >= 1,                  // 対象の規模が数で示されている
+  ],
+    // 「〜の場合は」は、その事象が起きないと達成できない書き方なので下げる。
+    // 業務時間外を指す書き方も、評価者が達成度合いを判断できない。
+    (conditionals.length > 0 || offHours.length > 0) ? 1 : 0);
 
   // ② 定量性（M 測れる）
   axis('quantity', '定量性', 'M', '数えられる形で書かれ、上司が確認できる事実になっているか', [
@@ -209,16 +253,21 @@ function scoreDraft(draft, mbo) {
    * 最低ライン。人事評価の分野で「これだけは満たせ」とされている3点で、
    * あしたのチームが判定に用いている「いつ・頻度・可視化」と、NGワードの排除にあたる。
    *
-   *   ① 気持ちを表すだけの曖昧な言葉が無い
+   *   ① 社内資料でNGとされている言葉が無い（心構え・範囲不明確・条件付き・業務時間外）
    *   ② 頻度か期限のどちらかが決まっている
-   *   ③ 上司が確認できる形になっている（提出物・記録・レビュー・報告先）
+   *   ③ 上司が確認できる形になっている（提出物・記録・レビュー・報告先）、
+   *      または行動そのものが数えられる（数量が2つ以上）
    *
    * ここを満たした目標は、数値まで揃っていなくても提出できる水準とみなし、
    * 総合点が3.5を下回らないようにする。満たした人に「書き直し」と言わないため。
    */
   const meetsBaseline = vague.length === 0
+    && conditionals.length === 0 && offHours.length === 0
     && (frequencies.length + deadlines.length) >= 1
-    && (evidence.length >= 1 || reportTargets.length >= 1 || reports.length >= 1);
+    && (evidence.length >= 1 || reportTargets.length >= 1 || reports.length >= 1
+      // 行動そのものが数えられる形（「1日100件の荷電」など）なら、それで測れる。
+      // 社内資料の良い例には、上長への報告が入っていないものもある。
+      || quantities.length >= 2);
 
   // 最終点は、点数のある5観点の平均。小数第1位まで出す（例 3.2／5）
   const scored = axes.filter(function (a) { return a.score !== null; });
@@ -237,6 +286,8 @@ function scoreDraft(draft, mbo) {
       vague: vague, actions: actions, systems: systems, deadlines: deadlines,
       frequencies: frequencies, reports: reports, reviews: reviews,
       outcomes: outcomes, quantities: quantities, dependents: dependents,
+      weakVerbs: weakVerbs, conditionals: conditionals, offHours: offHours, openEnded: openEnded,
+      length: text.replace(/\s/g, '').length,
       reportTargets: reportTargets, evidence: evidence,
     },
   };

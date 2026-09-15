@@ -94,6 +94,43 @@ const ROOT_CAUSES = [
     },
   },
   {
+    key: 'conditional',
+    axis: 'specificity',
+    test: function (r) { return r.detected.conditionals.length > 0; },
+    message: function (r) {
+      return '「' + r.detected.conditionals[0] + '」という書き方は、その事象が起きないと達成できません。'
+        + '起きなければ評価のしようがないので、自分から起こす行動（毎週の点検など）に変えると確実です。';
+    },
+  },
+  {
+    key: 'weakVerb',
+    axis: 'method',
+    test: function (r) { return r.detected.weakVerbs.length > 0 && r.detected.evidence.length === 0; },
+    message: function (r) {
+      return '「' + r.detected.weakVerbs.slice(0, 2).join('」「') + '」は、やったかどうかが外から見えません。'
+        + '「読んでレポートにまとめて提出する」のように、残るものとセットにすると評価できる形になります。';
+    },
+  },
+  {
+    key: 'offHours',
+    axis: 'specificity',
+    test: function (r) { return r.detected.offHours.length > 0; },
+    message: function (r) {
+      return '「' + r.detected.offHours[0] + '」は業務時間外を指すため、上長が達成度合いを判断できません。'
+        + '業務時間の中でできる行動に置き換えてください。';
+    },
+  },
+  {
+    key: 'tooShort',
+    axis: 'specificity',
+    test: function (r) { return r.text.length > 0 && r.detected.length < 60; },
+    message: function (r) {
+      return '全体で' + r.detected.length + '文字です。社内の目安は100文字程度で、'
+        + '「○○するために、△△を行う。そのために□□する」と一段掘り下げて書くと、'
+        + '何をするのかが読み手に伝わります。';
+    },
+  },
+  {
     key: 'dependent',
     axis: 'method',
     test: function (r) {
@@ -102,7 +139,8 @@ const ROOT_CAUSES = [
     message: function (r) {
       return '「' + r.detected.dependents[0] + '」のように、他の人が動くことを前提にした書き方が入っています。'
         + 'SMARTのA（達成できる）は、自分の判断で動かせることが条件です。'
-        + '相手が動かなかった場合でも自分で進められる行動を1つ足しておくと安心です。';
+        + '社内の資料でもNGとされている書き方です。'
+        + '「そのために自分は何をするか」を続けて書けば問題ありません。';
     },
   },
 ];

@@ -108,4 +108,32 @@ console.log(offBase === 0
   ? '社外の模範解答とも矛盾していません。'
   : offBase + ' 件がずれています。当社の基準が厳しすぎないか確認すること。');
 
-process.exit(failed === 0 && tooKind === 0 && offBase === 0 ? 0 : 1);
+console.log('');
+console.log('■ 社内資料の良い例・悪い例（①社員向け説明資料2026.1改定）');
+console.log('');
+
+const official = [
+  { kind: '良い', text: '受注粗利益を達成するために、新規訪問件数を毎月10件にします。そのために、新規テレマを1日3時間行い、また上司のアポイントへ同席させて頂けるよう、毎週金曜日に上司の予定をチェックし、同席依頼をあげます。' },
+  { kind: '良い', text: '新規顧客を3件獲得する。その為に毎日新規テレマを3時間実施し、1日100件の荷電を行う。' },
+  { kind: '良い', text: '新しい知識を身に付けることにチャレンジする。例えば、月に2回新商品に関する勉強会を開催します。新商品について特徴やセールスポイントを事前に調べ、勉強会の中でチーム全員に共有します。' },
+  { kind: '悪い', text: '●●を達成できるように頑張りたい' },
+  { kind: '悪い', text: '新規顧客を3件獲得する' },
+  { kind: '悪い', text: '新しい知識を身に付けることにチャレンジする。' },
+  { kind: '悪い', text: '毎日○や△を行う。また◇や◎を実施する。' },
+];
+
+let offOfficial = 0;
+official.forEach(function (c) {
+  const r = scoreDraft(c.text);
+  const ok = c.kind === '良い' ? r.total >= 3.5 : r.total < 2.5;
+  console.log(line(ok ? '  OK ' : '  ずれ', r, c.kind + '例　' + c.text.slice(0, 22) + '…'));
+  if (!ok) offOfficial++;
+});
+
+console.log('');
+console.log(offOfficial === 0
+  ? '社内資料の良い例・悪い例とも一致しています。'
+  : offOfficial + ' 件がずれています。社内資料の基準と合っていません。');
+
+process.exit(failed === 0 && tooKind === 0 && offBase === 0 && offOfficial === 0 ? 0 : 1);
+
