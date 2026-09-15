@@ -22,7 +22,7 @@ const VAGUE_WORDS = [
   '頑張', 'がんば', 'しっかり', 'きちんと', 'ちゃんと', '努め', '心がけ', '心掛け',
   '意識し', 'なるべく', 'できるだけ', '出来るだけ', '積極的に', '前向きに',
   '極力', '努力', '注力', '推進し', '強化し',
-  '忘れないように', '丁寧に', 'スムーズに', '適切に', '随時', '可能な限り',
+  '忘れないように', '丁寧に', 'スムーズに', '適切に', '随時', '適宜', '可能な限り',
   '喜んでもら', '満足してもら', '信頼される', '迷惑をかけない', '気をつけ', '気を付け',
 ];
 
@@ -35,7 +35,7 @@ const ACTION_VERBS = [
   '連絡', '点検', '登録', '設定', '依頼', '同行', '説明', '集計', '分析', '整理',
   '配布', 'レビュー', '面談', '架電', '送付', '入力', '更新', '見積', '発注', '巡回',
   '構築', '導入', '整備', '展開', '運用', '開催', '周知', '改修', '標準化', '発信',
-  'リリース', '検証', '測定', '教育', '指導', '同席', '手配', '交渉', '調整',
+  'リリース', '検証', '測定', '教育', '指導', '同席', '手配', '交渉', '調整', '設計', '試作',
   '見直', '洗い出', '立案', '企画', '検討', '決定', '選定', '比較', '試算', '棚卸',
 ];
 
@@ -67,7 +67,7 @@ const REPORT_WORDS = ['報告', '共有', '提出', '連絡', 'レビュー', '�
 /** 報告する「相手」や「場」を表す言葉。REPORT_WORDS とは重ねない */
 const REPORT_TARGETS = [
   '上長', '上司', '所長', '店長', '課長', '部長', '本部長',
-  '朝礼', 'ミーティング', '会議', '定例', '面談', '1on1', '1対1', '打合せ', '打ち合わせ',
+  '朝礼', 'ミーティング', 'ＭＴ', 'MT', '会議', '定例', '面談', '1on1', '1対1', '打合せ', '打ち合わせ',
 ];
 
 /** 振り返り・立て直しを表す言葉 */
@@ -130,7 +130,13 @@ function scoreDraft(draft, mbo) {
   const systems = findWords(text, SYSTEM_WORDS);
   const evidence = findWords(text, EVIDENCE_WORDS);
   const deadlines = findWords(text, DEADLINE_WORDS);
+  // 「Q3」「第3四半期」「上期」のような区切りも期限として数える
+  const quarterPattern = toHalfWidth(text).match(/Q[1-4]|第[1-4]四半期|上期|下期/g) || [];
+  quarterPattern.forEach(function (v) { if (deadlines.indexOf(v) === -1) deadlines.push(v); });
   const frequencies = findWords(text, FREQUENCY_WORDS);
+  // 「月2回」「週1回」「年4回」のような書き方も頻度として数える
+  const frequencyPattern = toHalfWidth(text).match(/(毎|各)?[日週月年]\s*\d+\s*回|\d+\s*回\s*\/\s*[日週月年]/g) || [];
+  frequencyPattern.forEach(function (v) { if (frequencies.indexOf(v) === -1) frequencies.push(v); });
   const reports = findWords(text, REPORT_WORDS);
   const reportTargets = findWords(text, REPORT_TARGETS);
   const reviews = findWords(text, REVIEW_WORDS);
@@ -185,7 +191,7 @@ function scoreDraft(draft, mbo) {
     frequencies.length + deadlines.length >= 1,
     frequencies.length >= 1 && deadlines.length >= 1,
     frequencies.length + deadlines.length >= 3,
-    /([月火水木金土日]曜|月末|週末|期末|\d+日までに|毎月\d+日|\d+日(まで|時点))/.test(toHalfWidth(text)),  // 曜日や日付まで決まっている
+    /([月火水木金土日]曜|月末|週末|期末|\d+日までに|毎月\d+日|\d+日(まで|時点)|Q[1-4]|第[1-4]四半期)/.test(toHalfWidth(text)),  // 曜日・日付・四半期まで決まっている
   ]);
 
   // ⑤ 報告・振返り（＋ 見直す）
